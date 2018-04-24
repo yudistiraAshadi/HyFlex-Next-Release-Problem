@@ -40,7 +40,7 @@ public class NRPInstance
 	private void initializeTheInstance()
 	{
 		int totalEnhancement = 0;
-		List< Integer > enhancementCosts = new ArrayList< Integer >();
+        List< Integer > enhancementCosts = new ArrayList< Integer >();
 
 		try ( BufferedReader br = new BufferedReader( new FileReader( fileName ) ) ) {
 

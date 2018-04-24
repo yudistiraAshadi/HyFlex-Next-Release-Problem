@@ -50,7 +50,7 @@ public class Enhancement
 	 * 
 	 * @param enhancement
 	 */
-	protected void addDependencyEnhancement( Enhancement enhancement )
+    protected void addDependencyEnhancement( Enhancement enhancement )
 	{
 		this.dependencyEnhancementsSet.add( enhancement );
 	}
