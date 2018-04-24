@@ -13,7 +13,7 @@ public class Enhancement
 	 * @param id
 	 * @param cost
 	 */
-	public Enhancement( int id, int cost )
+	public Enhancement( int id, double cost )
 	{
 		this.id = id;
 		this.cost = cost;
@@ -36,7 +36,7 @@ public class Enhancement
 	}
 
 	/**
-	 * @return the enhancements set
+	 * @return the copy of enhancementSet
 	 */
 	public Set< Enhancement > getEnhancementsSet()
 	{
@@ -55,10 +55,13 @@ public class Enhancement
 		this.enhancementsSet.add( enhancement );
 	}
 
+	/**
+	 * @return string representation of the Enhancement class
+	 */
 	@Override
 	public String toString()
 	{
-		return "Requirement ID: " + this.id + ", Cost: " + this.cost + ", Dependencies: "
+		return "Enhancement ID: " + this.id + ", Cost: " + this.cost + ", Dependencies: "
 		        + this.enhancementsSet;
 	}
 }
