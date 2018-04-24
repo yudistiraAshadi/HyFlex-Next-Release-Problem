@@ -7,7 +7,7 @@ public class Enhancement
 {
 	private int id;
 	private double cost;
-	private Set< Enhancement > enhancementsSet = new HashSet<>();
+	private Set< Enhancement > dependencyEnhancementsSet = new HashSet<>();
 
 	/**
 	 * @param id
@@ -38,11 +38,11 @@ public class Enhancement
 	/**
 	 * @return the copy of enhancementSet
 	 */
-	public Set< Enhancement > getEnhancementsSet()
+	public Set< Enhancement > getDependencyEnhancementsSet()
 	{
-		Set< Enhancement > copyOfEnhancementsSet = new HashSet<>( this.enhancementsSet );
+		Set< Enhancement > copyOfDependencyEnhancementsSet = new HashSet<>( this.dependencyEnhancementsSet );
 
-		return copyOfEnhancementsSet;
+		return copyOfDependencyEnhancementsSet;
 	}
 
 	/**
@@ -50,9 +50,9 @@ public class Enhancement
 	 * 
 	 * @param enhancement
 	 */
-	protected void addEnhancement( Enhancement enhancement )
+	protected void addDependencyEnhancement( Enhancement enhancement )
 	{
-		this.enhancementsSet.add( enhancement );
+		this.dependencyEnhancementsSet.add( enhancement );
 	}
 
 	/**
@@ -62,6 +62,6 @@ public class Enhancement
 	public String toString()
 	{
 		return "Enhancement ID: " + this.id + ", Cost: " + this.cost + ", Dependencies: "
-		        + this.enhancementsSet;
+		        + this.dependencyEnhancementsSet;
 	}
 }
