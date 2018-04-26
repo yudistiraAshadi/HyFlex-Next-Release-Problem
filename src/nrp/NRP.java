@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -213,10 +214,17 @@ public class NRP extends ProblemDomain
     @Override
     public void initialiseSolution( int solutionIndex )
     {
-        int[] initialSolution = new int[ this.instance.getNumberOfCities() ];
+        NRPSolution initialSolution;
+        Map< Integer, Customer > customersMap = this.nrpInstance.getCustomersMap();
 
-        for ( int i = 0; i < initialSolution.length; i++ ) {
-            initialSolution[ i ] = i;
+        Iterator< Map.Entry< Integer, Customer > > customersMapEntries
+                = customersMap.entrySet().iterator();
+        
+        while ( customersMapEntries.hasNext() ) {
+            Map.Entry< Integer, Customer > entry = customersMapEntries.next();
+            initialSolution.addAnAcceptedCustomer( customer );
+            
+            
         }
 
         double totalDistance = this.instance.getTotalDistance( initialSolution );

@@ -13,7 +13,7 @@ public class Enhancement
 	 * @param id
 	 * @param cost
 	 */
-	public Enhancement( int id, double cost )
+	protected Enhancement( int id, double cost )
 	{
 		this.id = id;
 		this.cost = cost;
@@ -22,7 +22,7 @@ public class Enhancement
 	/**
 	 * @return the id
 	 */
-	public int getId()
+	protected int getId()
 	{
 		return this.id;
 	}
@@ -30,7 +30,7 @@ public class Enhancement
 	/**
 	 * @return the cost
 	 */
-	public double getCost()
+	protected double getCost()
 	{
 		return this.cost;
 	}
@@ -38,7 +38,7 @@ public class Enhancement
 	/**
 	 * @return the copy of enhancementSet
 	 */
-	public Set< Enhancement > getDependencyEnhancementsSet()
+	protected Set< Enhancement > getDependencyEnhancementsSet()
 	{
 		Set< Enhancement > copyOfDependencyEnhancementsSet = new HashSet<>( this.dependencyEnhancementsSet );
 
