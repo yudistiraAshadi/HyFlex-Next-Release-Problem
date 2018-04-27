@@ -102,7 +102,8 @@ public class ExampleHyperHeuristic1 extends HyperHeuristic
             // calculate the change in fitness from the current solution to the new solution
             double delta = current_obj_function_value - new_obj_function_value;
 
-            // all of the problem domains are implemented as minimisation problems. A lower
+            // NRP is implemented as maximisation problem, as it objective is to get as much
+            // profit as possible. A bigger
             // fitness means a better solution.
             if ( delta > 0 ) {
                 // if there is an improvement then we 'accept' the solution by copying the new

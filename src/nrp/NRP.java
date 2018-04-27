@@ -1,13 +1,9 @@
 package nrp;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import AbstractClasses.ProblemDomain;
 import AbstractClasses.ProblemDomain.HeuristicType;
@@ -16,7 +12,7 @@ public class NRP extends ProblemDomain
 {
     private NRPInstance nrpInstance;
     private NRPSolution[] nrpSolutions = new NRPSolution[ 2 ];
-    private double biggestProfit = 0;
+    private double biggestProfit;
 
     public NRP( long seed )
     {
@@ -31,7 +27,11 @@ public class NRP extends ProblemDomain
 
         switch ( heuristicID ) {
             case 0:
-                this.maximumRatioGRASP( solutionSourceIndex, solutionDestinationIndex );
+                this.randomDeletionAndFirstAdding( solutionSourceIndex, solutionDestinationIndex );
+                break;
+            case 1:
+                this.deleteBiggestCostAddSmallestCost( solutionSourceIndex,
+                        solutionDestinationIndex );
                 break;
             default:
                 System.err.println( "heuristic does not exist" );
@@ -57,7 +57,11 @@ public class NRP extends ProblemDomain
 
         switch ( heuristicID ) {
             case 0:
-                this.maximumRatioGRASP( solutionSourceIndex1, solutionDestinationIndex );
+                this.randomDeletionAndFirstAdding( solutionSourceIndex1, solutionDestinationIndex );
+                break;
+            case 1:
+                this.deleteBiggestCostAddSmallestCost( solutionSourceIndex1,
+                        solutionDestinationIndex );
                 break;
             default:
                 System.err.println( "heuristic does not exist" );
@@ -83,65 +87,103 @@ public class NRP extends ProblemDomain
         }
     }
 
-    private void maximumRatioGRASP( int sourceIndex, int targetIndex )
+    /**
+     * Randomly delete an accepted customer and add all customer while the cost is
+     * sufficient
+     */
+    private void randomDeletionAndFirstAdding( int sourceIndex, int targetIndex )
     {
-        Map< Integer, Customer > customerMap = new HashMap<>( this.nrpInstance.getCustomerMap() );
-        Map< Integer, Enhancement > enhancementMap
-                = new HashMap<>( this.nrpInstance.getEnhancementMap() );
+        NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
+        Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
 
-        Set< Enhancement > allEnhancements = new HashSet<>( enhancementMap.values() );
-        Set< Customer > allCustomers = new HashSet<>( customerMap.values() );
-        Set< Customer > acceptedCustomers = new HashSet<>();
-        Set< Enhancement > acceptedEnhancements = new HashSet<>();
+        /*
+         * Select a random number between 0 ~ totalAcceptedCustomers
+         */
+        int totalAcceptedCustomers = customersSet.size();
+        int randomNumber = this.rng.nextInt( totalAcceptedCustomers );
 
-        // Get cost limit
-        int costLimit = 0;
-        for ( Enhancement enhancement : allEnhancements ) {
-            costLimit += enhancement.getCost();
+        /*
+         * Remove the selected entry
+         */
+        Iterator< Customer > customersIterator = customersSet.iterator();
+        for ( int i = 0; i < randomNumber; i++ ) {
+            customersIterator.next();
+        }
+        Customer removedCustomer = customersIterator.next();
+        currentSolution.removeAnAcceptedCustomer( removedCustomer );
+
+        /*
+         * Add all customer if it is safe to add
+         */
+        double costLimit = this.nrpInstance.getCostLimit();
+        for ( Customer customer : currentSolution.getHaveNotBeenAcceptedCustomers() ) {
+            if ( currentSolution.isSafeAddingACustomer( customer, costLimit ) ) {
+                currentSolution.addAnAcceptedCustomer( customer );
+            }
         }
 
-        for ( int currentCost = 0;; ) {
-            // get set of customers that haven't been accepted
-            Set< Customer > remainingCustomers = new HashSet<>( allCustomers );
-            remainingCustomers.removeAll( acceptedCustomers );
+        this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
+    }
 
-            // update customer's profitEnhancementsCostRatio
-            for ( Customer customer : remainingCustomers ) {
+    private void deleteBiggestCostAddSmallestCost( int sourceIndex, int targetIndex )
+    {
+        NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
+        Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
 
-                double profit = customer.getProfit();
+        /*
+         * Find the biggest cost customer
+         */
+        double biggestCost = 0.0;
+        int theBiggestCostCustomerId = 0;
+        for ( Customer customer : customersSet ) {
+            double customerCost = customer.getOriginalCost();
 
-                // count the cost of each customer
-                Set< Enhancement > enhancementSet = customer.getEnhancementsSet();
-                enhancementSet.removeAll( acceptedEnhancements );
-                int customerCost = 0;
-                for ( Enhancement enhancement : enhancementSet ) {
-                    customerCost += enhancement.getCost();
-                }
-
-                double profitEnhancementsCostRatio = profit / customerCost;
-                customer.setProfitEnhancementsCostRatio( profitEnhancementsCostRatio );
+            if ( customerCost > biggestCost ) {
+                biggestCost = customerCost;
+                theBiggestCostCustomerId = customer.getId();
             }
-
-            // sort in descending order
-            List< Customer > customerList = new ArrayList<>( remainingCustomers );
-            customerList.sort( ( a, b ) -> Double.compare( b.getProfitEnhancementsCostRatio(),
-                    a.getProfitEnhancementsCostRatio() ) );
-
-            // do GRASP
-            int randomNumber = this.rng.nextInt( 10 );
-            Customer acceptedCustomer = customerMap.get( randomNumber );
-
-            acceptedCustomers.add( acceptedCustomer );
-            acceptedEnhancements.addAll( acceptedCustomer.getEnhancementSet() );
-
-            // count current cost
-            int totalCostAccepted = 0;
-            for ( Enhancement enhancement : acceptedEnhancements ) {
-                totalCostAccepted += enhancement.getCost();
-            }
-
-            currentCost = totalCostAccepted;
         }
+
+        /*
+         * Delete the biggest cost customer from the set
+         */
+        for ( Customer customer : customersSet ) {
+            if ( customer.getId() == theBiggestCostCustomerId ) {
+                currentSolution.removeAnAcceptedCustomer( customer );
+                break;
+            }
+        }
+
+        /*
+         * Reorder the haveNotBeenAcceptedCustomers set
+         */
+        Set< Customer > haveNotBeenAcceptedCustomers
+                = currentSolution.getHaveNotBeenAcceptedCustomers();
+        Set< Customer > customersSetFromLowestToBiggestCost
+                = new TreeSet< Customer >( new Comparator< Customer >() {
+
+                    @Override
+                    public int compare( Customer cust1, Customer cust2 )
+                    {
+                        return Double.compare( cust2.getOriginalCost(), cust1.getOriginalCost() );
+                    }
+
+                } );
+        customersSetFromLowestToBiggestCost.addAll( haveNotBeenAcceptedCustomers );
+
+        /*
+         * Add all customer if cost is sufficient, start from the lowest cost
+         */
+        double costLimit = this.nrpInstance.getCostLimit();
+        for ( Customer customer : customersSetFromLowestToBiggestCost ) {
+            if ( currentSolution.isSafeAddingACustomer( customer, costLimit ) ) {
+                currentSolution.addAnAcceptedCustomer( customer );
+            } else {
+                break;
+            }
+        }
+
+        this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
     }
 
     @Override
@@ -202,7 +244,7 @@ public class NRP extends ProblemDomain
     @Override
     public int getNumberOfHeuristics()
     {
-        return 3;
+        return 2;
     }
 
     @Override
@@ -214,22 +256,31 @@ public class NRP extends ProblemDomain
     @Override
     public void initialiseSolution( int solutionIndex )
     {
-        NRPSolution initialSolution;
-        Map< Integer, Customer > customersMap = this.nrpInstance.getCustomersMap();
+        NRPSolution initialSolution = new NRPSolution( this.nrpInstance.getCustomersSet() );
+        double costLimit = this.nrpInstance.getCostLimit();
+        System.out.println( costLimit );
 
-        Iterator< Map.Entry< Integer, Customer > > customersMapEntries
-                = customersMap.entrySet().iterator();
-        
-        while ( customersMapEntries.hasNext() ) {
-            Map.Entry< Integer, Customer > entry = customersMapEntries.next();
+        Set<Customer> haveNotBeenAcceptedCustomers = initialSolution.getHaveNotBeenAcceptedCustomers();
+        Iterator< Customer > customersIterator = haveNotBeenAcceptedCustomers.iterator();
+
+        if ( customersIterator.hasNext() ) {
+            Customer customer = customersIterator.next();
             initialSolution.addAnAcceptedCustomer( customer );
-            
-            
+
+            while ( customersIterator.hasNext() ) {
+                customer = customersIterator.next();
+                if ( initialSolution.isSafeAddingACustomer( customer, costLimit ) ) {
+                    initialSolution.addAnAcceptedCustomer( customer );
+                } else {
+                    break;
+                }
+            }
         }
 
-        double totalDistance = this.instance.getTotalDistance( initialSolution );
-        this.solutionMemory[ solutionIndex ] = new TSPSolution( initialSolution, totalDistance );
-        this.verifyShortestDistance( totalDistance );
+        this.nrpSolutions[ solutionIndex ] = new NRPSolution( initialSolution );
+        // System.out.println(
+        // this.nrpSolutions[solutionIndex].getAcceptedCustomers().size() );
+        this.verifyBiggestProfit( initialSolution.getTotalProfit() );
     }
 
     @Override

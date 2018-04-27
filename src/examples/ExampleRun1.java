@@ -2,7 +2,7 @@ package examples;
 
 import AbstractClasses.HyperHeuristic;
 import AbstractClasses.ProblemDomain;
-import SAT.SAT;
+import nrp.NRP;
 
 /**
  * This class shows how to run a selected hyper-heuristic on a selected problem
@@ -17,7 +17,7 @@ public class ExampleRun1
     {
 
         // create a ProblemDomain object with a seed for the random number generator
-        ProblemDomain problem = new SAT( 1234 );
+        ProblemDomain problem = new NRP( 1234 );
 
         // creates an ExampleHyperHeuristic object with a seed for the random number
         // generator

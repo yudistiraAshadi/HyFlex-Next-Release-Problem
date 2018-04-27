@@ -14,11 +14,13 @@ public class NRPInstance
 {
     private Map< Integer, Enhancement > enhancementsMap = new HashMap<>();
     private Map< Integer, Customer > customersMap = new HashMap<>();
+    private Set< Enhancement > enhancementsSet = new HashSet<>();
+    private Set< Customer > customersSet = new HashSet<>();
     private int numberOfEnhancements;
     private int numberOfCustomers;
+
     private double totalCost;
     private double costLimit;
-
     private double costLimitRatio = 0.7;
     private String fileName = "src/nrp/instance/nrp1.txt";
 
@@ -117,6 +119,12 @@ public class NRPInstance
                 this.customersMap.put( customerId, customer );
             }
 
+            /*
+             * Create enhancementsSet and customersSet from enhancementsMap and customersMap
+             */
+            this.enhancementsSet = new HashSet<>( this.enhancementsMap.values() );
+            this.customersSet = new HashSet<>( this.customersMap.values() );
+
         } catch ( IOException e ) {
             e.printStackTrace();
         }
@@ -209,6 +217,26 @@ public class NRPInstance
         Map< Integer, Customer > copyOfCustomersMap = new HashMap<>( this.customersMap );
 
         return copyOfCustomersMap;
+    }
+
+    /**
+     * @return the enhancementsSet
+     */
+    protected Set< Enhancement > getEnhancementsSet()
+    {
+        Set< Enhancement > copyOfEnhancementsSet = new HashSet<>( this.enhancementsSet );
+
+        return copyOfEnhancementsSet;
+    }
+
+    /**
+     * @return the customersSet
+     */
+    protected Set< Customer > getCustomersSet()
+    {
+        Set< Customer > copyOfCustomersSet = new HashSet<>( this.customersSet );
+
+        return copyOfCustomersSet;
     }
 
     /**

@@ -16,6 +16,14 @@ public class Customer
     private double currentCost;
 
     /**
+     * Empty constructor
+     */
+    protected Customer()
+    {
+
+    }
+
+    /**
      * @param id
      * @param profit
      * @param originalEnhancementsSet

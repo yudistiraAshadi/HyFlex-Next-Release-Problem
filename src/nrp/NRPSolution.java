@@ -1,7 +1,6 @@
 package nrp;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public class NRPSolution
@@ -13,16 +12,39 @@ public class NRPSolution
     private double totalProfit;
 
     /**
+     * Basic Constructor
+     * 
+     * @param customersMap
+     */
+    public NRPSolution(  Set< Customer > customersSet )
+    {
+        /*
+         * Create the haveNotBeenAcceptedCustomers set
+         */
+        Set< Customer > haveNotBeenAcceptedCustomers = new HashSet<>( customersSet );
+
+        /*
+         * Iterate through haveNotBeenAcceptedCustomers set and fixes their
+         * currentRequirements set
+         */
+        for ( Customer customer : haveNotBeenAcceptedCustomers ) {
+            customer.setCurrentEnhancementsSet( customer.getOriginalEnhancementsSet() );
+        }
+
+        this.haveNotBeenAcceptedCustomers = haveNotBeenAcceptedCustomers;
+    }
+
+    /**
      * @param acceptedCustomers
      * @param customersMap
      */
     protected NRPSolution( Set< Customer > acceptedCustomers,
-            Map< Integer, Customer > customersMap )
+            Set< Customer > customersSet )
     {
         /*
          * Create the haveNotBeenAcceptedCustomers and acceptedEnhancements set
          */
-        Set< Customer > haveNotBeenAcceptedCustomers = new HashSet<>( customersMap.values() );
+        Set< Customer > haveNotBeenAcceptedCustomers = new HashSet<>( customersSet );
         haveNotBeenAcceptedCustomers.removeAll( acceptedCustomers );
 
         /*
@@ -85,7 +107,7 @@ public class NRPSolution
             currentTotalCost += enhancement.getCost();
         }
 
-        if ( currentTotalCost > costLimit ) {
+        if ( currentTotalCost < costLimit ) {
             return true;
         } else {
             return false;
@@ -99,17 +121,22 @@ public class NRPSolution
      */
     protected void addAnAcceptedCustomer( Customer customer )
     {
+        Set< Customer > acceptedCustomers = new HashSet<>( this.acceptedCustomers );
+        Set< Customer > haveNotBeenAcceptedCustomers
+                = new HashSet<>( this.haveNotBeenAcceptedCustomers );
+        Set< Enhancement > acceptedEnhancements = new HashSet<>();
+
         /*
          * Update the haveNotBeenAcceptedCustomers and acceptedEnhancements set
          */
-        this.acceptedCustomers.add( customer );
-        this.haveNotBeenAcceptedCustomers.removeAll( this.acceptedCustomers );
+        acceptedCustomers.add( customer );
+        haveNotBeenAcceptedCustomers.remove( customer );
 
         /*
          * Update the acceptedEnhancements set
          */
-        for ( Customer cust : this.acceptedCustomers ) {
-            this.acceptedEnhancements.addAll( cust.getOriginalEnhancementsSet() );
+        for ( Customer cust : acceptedCustomers ) {
+            acceptedEnhancements.addAll( cust.getOriginalEnhancementsSet() );
         }
 
         /*
@@ -123,8 +150,60 @@ public class NRPSolution
             customer.setCurrentEnhancementsSet( currentEnhancementsSet );
         }
 
+        this.acceptedCustomers = acceptedCustomers;
+        this.haveNotBeenAcceptedCustomers = haveNotBeenAcceptedCustomers;
+        this.acceptedCustomers = acceptedCustomers;
         this.setTotalCost();
         this.setTotalProfit();
+    }
+
+    protected void removeAnAcceptedCustomer( Customer customer )
+    {
+        Set< Customer > acceptedCustomers = new HashSet<>( this.acceptedCustomers );
+        Set< Customer > haveNotBeenAcceptedCustomers
+                = new HashSet<>( this.haveNotBeenAcceptedCustomers );
+        Set< Enhancement > acceptedEnhancements = new HashSet<>();
+
+        /*
+         * Update the haveNotBeenAcceptedCustomers and acceptedEnhancements set
+         */
+        haveNotBeenAcceptedCustomers.add( customer );
+        acceptedCustomers.remove( customer );
+
+        /*
+         * Update the acceptedEnhancements set
+         */
+        for ( Customer cust : acceptedCustomers ) {
+            acceptedEnhancements.addAll( cust.getOriginalEnhancementsSet() );
+        }
+
+        /*
+         * Iterate through haveNotBeenAcceptedCustomers set and fixes their
+         * currentRequirements set
+         */
+        for ( Customer cust : haveNotBeenAcceptedCustomers ) {
+            Set< Enhancement > currentEnhancementsSet = cust.getOriginalEnhancementsSet();
+            currentEnhancementsSet.removeAll( this.acceptedEnhancements );
+
+            customer.setCurrentEnhancementsSet( currentEnhancementsSet );
+        }
+
+        this.acceptedCustomers = acceptedCustomers;
+        this.haveNotBeenAcceptedCustomers = haveNotBeenAcceptedCustomers;
+        this.acceptedCustomers = acceptedCustomers;
+        this.setTotalCost();
+        this.setTotalProfit();
+    }
+
+    /**
+     * @return the haveNotBeenAcceptedCustomers
+     */
+    protected Set< Customer > getHaveNotBeenAcceptedCustomers()
+    {
+        Set< Customer > copyOfHaveNotBeenAcceptedCustomers
+                = new HashSet<>( this.haveNotBeenAcceptedCustomers );
+
+        return copyOfHaveNotBeenAcceptedCustomers;
     }
 
     /**
