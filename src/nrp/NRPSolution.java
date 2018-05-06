@@ -16,7 +16,7 @@ public class NRPSolution
      * 
      * @param customersMap
      */
-    public NRPSolution(  Set< Customer > customersSet )
+    public NRPSolution( Set< Customer > customersSet )
     {
         /*
          * Create the haveNotBeenAcceptedCustomers set
@@ -38,8 +38,7 @@ public class NRPSolution
      * @param acceptedCustomers
      * @param customersMap
      */
-    protected NRPSolution( Set< Customer > acceptedCustomers,
-            Set< Customer > customersSet )
+    protected NRPSolution( Set< Customer > acceptedCustomers, Set< Customer > customersSet )
     {
         /*
          * Create the haveNotBeenAcceptedCustomers and acceptedEnhancements set
@@ -152,7 +151,7 @@ public class NRPSolution
 
         this.acceptedCustomers = acceptedCustomers;
         this.haveNotBeenAcceptedCustomers = haveNotBeenAcceptedCustomers;
-        this.acceptedCustomers = acceptedCustomers;
+        this.acceptedEnhancements = acceptedEnhancements;
         this.setTotalCost();
         this.setTotalProfit();
     }

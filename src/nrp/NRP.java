@@ -43,7 +43,7 @@ public class NRP extends ProblemDomain
                 = (int) ( (long) this.heuristicCallTimeRecord[ heuristicID ]
                         + ( System.currentTimeMillis() - startTime ) );
 
-        double currentTotalProfit = this.nrpSolutions[ solutionDestinationIndex ].getTotalCost();
+        double currentTotalProfit = this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
         this.verifyBiggestProfit( currentTotalProfit );
 
         return currentTotalProfit;
@@ -73,7 +73,7 @@ public class NRP extends ProblemDomain
                 = (int) ( (long) this.heuristicCallTimeRecord[ heuristicID ]
                         + ( System.currentTimeMillis() - startTime ) );
 
-        double currentTotalProfit = this.nrpSolutions[ solutionDestinationIndex ].getTotalCost();
+        double currentTotalProfit = this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
         this.verifyBiggestProfit( currentTotalProfit );
 
         return currentTotalProfit;
@@ -178,8 +178,6 @@ public class NRP extends ProblemDomain
         for ( Customer customer : customersSetFromLowestToBiggestCost ) {
             if ( currentSolution.isSafeAddingACustomer( customer, costLimit ) ) {
                 currentSolution.addAnAcceptedCustomer( customer );
-            } else {
-                break;
             }
         }
 
@@ -258,9 +256,10 @@ public class NRP extends ProblemDomain
     {
         NRPSolution initialSolution = new NRPSolution( this.nrpInstance.getCustomersSet() );
         double costLimit = this.nrpInstance.getCostLimit();
-        System.out.println( costLimit );
+        System.out.println( "Cost Limit: " + costLimit );
 
-        Set<Customer> haveNotBeenAcceptedCustomers = initialSolution.getHaveNotBeenAcceptedCustomers();
+        Set< Customer > haveNotBeenAcceptedCustomers
+                = initialSolution.getHaveNotBeenAcceptedCustomers();
         Iterator< Customer > customersIterator = haveNotBeenAcceptedCustomers.iterator();
 
         if ( customersIterator.hasNext() ) {
@@ -278,8 +277,6 @@ public class NRP extends ProblemDomain
         }
 
         this.nrpSolutions[ solutionIndex ] = new NRPSolution( initialSolution );
-        // System.out.println(
-        // this.nrpSolutions[solutionIndex].getAcceptedCustomers().size() );
         this.verifyBiggestProfit( initialSolution.getTotalProfit() );
     }
 

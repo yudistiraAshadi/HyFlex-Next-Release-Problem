@@ -44,6 +44,6 @@ public class ExampleRun1
         hyper_heuristic_object.run();
 
         // obtain the best solution found within the time limit
-        System.out.println( hyper_heuristic_object.getBestSolutionValue() );
+        System.out.println( "The best solution value: " + hyper_heuristic_object.getBestSolutionValue() );
     }
 }
