@@ -4,24 +4,21 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Logger;
 
 import AbstractClasses.ProblemDomain;
-import logger.NRPLogger;
+
+import nrp.logger.NRPLogger;
 
 public class NRP extends ProblemDomain
 {
-    private final static Logger logger = Logger.getLogger(NRPLogger.class.getName());
-    
     private NRPInstance nrpInstance;
     private NRPSolution[] nrpSolutions = new NRPSolution[ 2 ];
-    private double biggestProfit;
+    private NRPSolution bestSolution;
 
     public NRP( long seed )
     {
         super( seed );
         NRPLogger.init();
-        logger.info( "Test" );
     }
 
     @Override
@@ -49,7 +46,12 @@ public class NRP extends ProblemDomain
                         + ( System.currentTimeMillis() - startTime ) );
 
         double currentTotalProfit = this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
-        this.verifyBiggestProfit( currentTotalProfit );
+        this.verifyBestSolution( this.nrpSolutions[ solutionDestinationIndex ] );
+
+        /*
+         * Log the function
+         */
+        NRPLogger.logApplyHeuristic();
 
         return currentTotalProfit;
     }
@@ -79,16 +81,20 @@ public class NRP extends ProblemDomain
                         + ( System.currentTimeMillis() - startTime ) );
 
         double currentTotalProfit = this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
-        this.verifyBiggestProfit( currentTotalProfit );
+        this.verifyBestSolution( this.nrpSolutions[ solutionDestinationIndex ] );
+
+        /*
+         * Log the function
+         */
+        NRPLogger.logApplyHeuristic();
 
         return currentTotalProfit;
     }
 
-    private void verifyBiggestProfit( double currentTotalProfit )
+    private void verifyBestSolution( NRPSolution currentSolution )
     {
-        if ( currentTotalProfit > this.biggestProfit ) {
-            this.biggestProfit = currentTotalProfit;
-            System.out.println( this.biggestProfit );
+        if ( currentSolution.getTotalProfit() > this.bestSolution.getTotalProfit() ) {
+            this.bestSolution = new NRPSolution( currentSolution );
         }
     }
 
@@ -98,6 +104,11 @@ public class NRP extends ProblemDomain
      */
     private void randomDeletionAndFirstAdding( int sourceIndex, int targetIndex )
     {
+        /*
+         * Start time tracking
+         */
+        long start = System.currentTimeMillis();
+
         NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
         Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
 
@@ -127,11 +138,22 @@ public class NRP extends ProblemDomain
             }
         }
 
+        /*
+         * Finish time tracking
+         */
+        long elapsedTime = System.currentTimeMillis() - start;
+        NRPLogger.logRandomDeletionAndFirstAdding( elapsedTime );
+
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
     }
 
     private void deleteBiggestCostAddSmallestCost( int sourceIndex, int targetIndex )
     {
+        /*
+         * Start time tracking
+         */
+        long start = System.currentTimeMillis();
+
         NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
         Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
 
@@ -186,13 +208,19 @@ public class NRP extends ProblemDomain
             }
         }
 
+        /*
+         * Finish time tracking
+         */
+        long elapsedTime = System.currentTimeMillis() - start;
+        NRPLogger.logdeleteBiggestCostAddSmallestCost( elapsedTime );
+
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
     }
 
     @Override
     public String bestSolutionToString()
     {
-        return "Biggest Profit = " + this.biggestProfit;
+        return "Biggest Profit = " + this.bestSolution.getTotalProfit();
     }
 
     @Override
@@ -214,7 +242,7 @@ public class NRP extends ProblemDomain
     @Override
     public double getBestSolutionValue()
     {
-        return this.biggestProfit;
+        return this.bestSolution.getTotalProfit();
     }
 
     @Override
@@ -282,7 +310,7 @@ public class NRP extends ProblemDomain
         }
 
         this.nrpSolutions[ solutionIndex ] = new NRPSolution( initialSolution );
-        this.verifyBiggestProfit( initialSolution.getTotalProfit() );
+        this.bestSolution = new NRPSolution( initialSolution );
     }
 
     @Override
