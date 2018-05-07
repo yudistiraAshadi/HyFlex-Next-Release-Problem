@@ -24,14 +24,14 @@ public class NRPInstance
     private double totalCost;
     private double costLimit;
     private double costLimitRatio = 0.7;
-    private String fileName = "src/nrp/instance/nrp1.txt";
+    private String fileName = "src/nrp/instance/nrp";
 
-    protected NRPInstance()
+    protected NRPInstance( int instanceId )
     {
         /*
          * read the instance file
          */
-        initializeTheInstance();
+        initializeTheInstance( instanceId );
 
         /*
          * At the end of initialization, count the total of enhancements and customers
@@ -45,13 +45,14 @@ public class NRPInstance
     /**
      * Initialize the instance by reading the instance files
      */
-    private void initializeTheInstance()
+    private void initializeTheInstance( int instanceId )
     {
         int totalEnhancement = 0;
         List< Integer > enhancementCosts = new ArrayList< Integer >();
 
         // new BufferedReader( new FileReader( fileName ) )
-        Path pathToInstanceFile = FileSystems.getDefault().getPath( ".", fileName );
+        Path pathToInstanceFile
+                = FileSystems.getDefault().getPath( ".", fileName + instanceId + ".txt" );
         try ( BufferedReader br = Files.newBufferedReader( pathToInstanceFile ) ) {
 
             /*

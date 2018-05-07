@@ -35,6 +35,14 @@ public class NRP extends ProblemDomain
                 this.deleteBiggestCostAddSmallestCost( solutionSourceIndex,
                         solutionDestinationIndex );
                 break;
+            case 2:
+                this.deleteSmallestProfitAddBiggestProfit( solutionSourceIndex,
+                        solutionDestinationIndex );
+                break;
+            case 3:
+                this.deleteLowestProfitCostRatioAddHighestProfitCostRatio( solutionSourceIndex,
+                        solutionDestinationIndex );
+                break;
             default:
                 System.err.println( "heuristic does not exist" );
                 System.exit( -1 );
@@ -70,6 +78,14 @@ public class NRP extends ProblemDomain
                 this.deleteBiggestCostAddSmallestCost( solutionSourceIndex1,
                         solutionDestinationIndex );
                 break;
+            case 2:
+                this.deleteSmallestProfitAddBiggestProfit( solutionSourceIndex1,
+                        solutionDestinationIndex );
+                break;
+            case 3:
+                this.deleteLowestProfitCostRatioAddHighestProfitCostRatio( solutionSourceIndex1,
+                        solutionDestinationIndex );
+                break;
             default:
                 System.err.println( "heuristic does not exist" );
                 System.exit( -1 );
@@ -91,16 +107,23 @@ public class NRP extends ProblemDomain
         return currentTotalProfit;
     }
 
+    /**
+     * If the currentSolution is the best solution, save it
+     * 
+     * @param currentSolution
+     */
     private void verifyBestSolution( NRPSolution currentSolution )
     {
         if ( currentSolution.getTotalProfit() > this.bestSolution.getTotalProfit() ) {
             this.bestSolution = new NRPSolution( currentSolution );
+
+            System.out.println( this.getBestSolutionValue() );
         }
     }
 
     /**
-     * Randomly delete an accepted customer and add all customer while the cost is
-     * sufficient
+     * Heuristic #1 Randomly delete an accepted customer and add all customer while
+     * the cost is sufficient
      */
     private void randomDeletionAndFirstAdding( int sourceIndex, int targetIndex )
     {
@@ -147,6 +170,10 @@ public class NRP extends ProblemDomain
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
     }
 
+    /**
+     * Heuristic #2 Delete a customer with the biggest cost and add customer(s) with
+     * sufficient fund, start from the smallest cost customers
+     */
     private void deleteBiggestCostAddSmallestCost( int sourceIndex, int targetIndex )
     {
         /*
@@ -192,7 +219,7 @@ public class NRP extends ProblemDomain
                     @Override
                     public int compare( Customer cust1, Customer cust2 )
                     {
-                        return Double.compare( cust2.getOriginalCost(), cust1.getOriginalCost() );
+                        return Double.compare( cust1.getOriginalCost(), cust2.getOriginalCost() );
                     }
 
                 } );
@@ -213,6 +240,157 @@ public class NRP extends ProblemDomain
          */
         long elapsedTime = System.currentTimeMillis() - start;
         NRPLogger.logdeleteBiggestCostAddSmallestCost( elapsedTime );
+
+        this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
+    }
+
+    /**
+     * Heuristic #3 Delete an acceptedCustomer with the smallest profit and add
+     * customer(s) with sufficient fund with the biggest profit
+     */
+    private void deleteSmallestProfitAddBiggestProfit( int sourceIndex, int targetIndex )
+    {
+        /*
+         * Start time tracking
+         */
+        long start = System.currentTimeMillis();
+
+        NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
+        Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
+
+        /*
+         * Find the smallest profit customer
+         */
+        double smallestProfit = Double.POSITIVE_INFINITY;
+        int theSmallestProfitCustomerId = 0;
+        for ( Customer customer : customersSet ) {
+            double customerProfit = customer.getProfit();
+
+            if ( customerProfit < smallestProfit ) {
+                smallestProfit = customerProfit;
+                theSmallestProfitCustomerId = customer.getId();
+            }
+        }
+
+        /*
+         * Delete the smallest cost customer from the set
+         */
+        for ( Customer customer : customersSet ) {
+            if ( customer.getId() == theSmallestProfitCustomerId ) {
+                currentSolution.removeAnAcceptedCustomer( customer );
+                break;
+            }
+        }
+
+        /*
+         * Reorder the haveNotBeenAcceptedCustomers set
+         */
+        Set< Customer > haveNotBeenAcceptedCustomers
+                = currentSolution.getHaveNotBeenAcceptedCustomers();
+        Set< Customer > customersSetFromBiggestToLowestProfit
+                = new TreeSet< Customer >( new Comparator< Customer >() {
+
+                    @Override
+                    public int compare( Customer cust1, Customer cust2 )
+                    {
+                        return Double.compare( cust2.getProfit(), cust1.getProfit() );
+                    }
+
+                } );
+        customersSetFromBiggestToLowestProfit.addAll( haveNotBeenAcceptedCustomers );
+
+        /*
+         * Add all customer if cost is sufficient, start from the lowest cost
+         */
+        double costLimit = this.nrpInstance.getCostLimit();
+        for ( Customer customer : customersSetFromBiggestToLowestProfit ) {
+            if ( currentSolution.isSafeAddingACustomer( customer, costLimit ) ) {
+                currentSolution.addAnAcceptedCustomer( customer );
+            }
+        }
+
+        /*
+         * Finish time tracking
+         */
+        long elapsedTime = System.currentTimeMillis() - start;
+        NRPLogger.deleteSmallestProfitAddBiggestProfit( elapsedTime );
+
+        this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
+    }
+
+    /**
+     * Heuristic #4 Delete an acceptedCustomer with the smallest profit/cost ratio
+     * and add customer(s) with sufficient fund with the biggest profit/cost ratio
+     */
+    private void deleteLowestProfitCostRatioAddHighestProfitCostRatio( int sourceIndex,
+            int targetIndex )
+    {
+        /*
+         * Start time tracking
+         */
+        long start = System.currentTimeMillis();
+
+        NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
+        Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
+
+        /*
+         * Find the smallest profit/cost ratio customer
+         */
+        double smallestProfitCostRatio = Double.POSITIVE_INFINITY;
+        int theSmallestProfitCostRatioCustomerId = 0;
+        for ( Customer customer : customersSet ) {
+            double customerProfitCostRatio = customer.getProfit() / customer.getOriginalCost();
+
+            if ( customerProfitCostRatio < smallestProfitCostRatio ) {
+                smallestProfitCostRatio = customerProfitCostRatio;
+                theSmallestProfitCostRatioCustomerId = customer.getId();
+            }
+        }
+
+        /*
+         * Delete the smallest cost customer from the set
+         */
+        for ( Customer customer : customersSet ) {
+            if ( customer.getId() == theSmallestProfitCostRatioCustomerId ) {
+                currentSolution.removeAnAcceptedCustomer( customer );
+                break;
+            }
+        }
+
+        /*
+         * Reorder the haveNotBeenAcceptedCustomers set
+         */
+        Set< Customer > haveNotBeenAcceptedCustomers
+                = currentSolution.getHaveNotBeenAcceptedCustomers();
+        Set< Customer > customersSetFromBiggestToLowestProfitCostRatio
+                = new TreeSet< Customer >( new Comparator< Customer >() {
+
+                    @Override
+                    public int compare( Customer cust1, Customer cust2 )
+                    {
+
+                        return Double.compare( cust2.getProfit() / cust2.getOriginalCost(),
+                                cust1.getProfit() / cust1.getOriginalCost() );
+                    }
+
+                } );
+        customersSetFromBiggestToLowestProfitCostRatio.addAll( haveNotBeenAcceptedCustomers );
+
+        /*
+         * Add all customer if cost is sufficient, start from the lowest cost
+         */
+        double costLimit = this.nrpInstance.getCostLimit();
+        for ( Customer customer : customersSetFromBiggestToLowestProfitCostRatio ) {
+            if ( currentSolution.isSafeAddingACustomer( customer, costLimit ) ) {
+                currentSolution.addAnAcceptedCustomer( customer );
+            }
+        }
+
+        /*
+         * Finish time tracking
+         */
+        long elapsedTime = System.currentTimeMillis() - start;
+        NRPLogger.deleteLowestProfitCostRatioAddHighestProfitCostRatio( elapsedTime );
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
     }
@@ -275,13 +453,13 @@ public class NRP extends ProblemDomain
     @Override
     public int getNumberOfHeuristics()
     {
-        return 2;
+        return 4;
     }
 
     @Override
     public int getNumberOfInstances()
     {
-        return 1;
+        return 5;
     }
 
     @Override
@@ -316,7 +494,7 @@ public class NRP extends ProblemDomain
     @Override
     public void loadInstance( int index )
     {
-        this.nrpInstance = new NRPInstance();
+        this.nrpInstance = new NRPInstance( index );
     }
 
     @Override

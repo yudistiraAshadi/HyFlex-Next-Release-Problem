@@ -16,6 +16,8 @@ public class NRPLogger
     private static int applyHeuristicCounter = 0;
     private static int randomDeletionAndFirstAddingCounter = 0;
     private static int deleteBiggestCostAddSmallestCostCounter = 0;
+    private static int deleteSmallestProfitAddBiggestProfitCounter = 0;
+    private static int deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter = 0;
 
     public static void init()
     {
@@ -64,5 +66,21 @@ public class NRPLogger
                 + deleteBiggestCostAddSmallestCostCounter + ", time elapsed: " + timeElapsed
                 + " ms" );
 
+    }
+
+    public static void deleteSmallestProfitAddBiggestProfit( long timeElapsed )
+    {
+        deleteSmallestProfitAddBiggestProfitCounter += 1;
+        LOGGER.info( "deleteSmallestProfitAddBiggestProfit calls number #"
+                + deleteSmallestProfitAddBiggestProfitCounter + ", time elapsed: " + timeElapsed
+                + " ms" );
+    }
+
+    public static void deleteLowestProfitCostRatioAddHighestProfitCostRatio( long timeElapsed )
+    {
+        deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter += 1;
+        LOGGER.info( "deleteLowestProfitCostRatioAddHighestProfitCostRatio calls number #"
+                + deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter + ", time elapsed: "
+                + timeElapsed + " ms" );
     }
 }
