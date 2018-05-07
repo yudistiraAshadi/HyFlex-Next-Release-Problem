@@ -4,12 +4,15 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import AbstractClasses.ProblemDomain;
-import AbstractClasses.ProblemDomain.HeuristicType;
+import logger.NRPLogger;
 
 public class NRP extends ProblemDomain
 {
+    private final static Logger logger = Logger.getLogger(NRPLogger.class.getName());
+    
     private NRPInstance nrpInstance;
     private NRPSolution[] nrpSolutions = new NRPSolution[ 2 ];
     private double biggestProfit;
@@ -17,6 +20,8 @@ public class NRP extends ProblemDomain
     public NRP( long seed )
     {
         super( seed );
+        NRPLogger.init();
+        logger.info( "Test" );
     }
 
     @Override

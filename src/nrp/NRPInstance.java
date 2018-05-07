@@ -1,8 +1,10 @@
 package nrp;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,7 +50,9 @@ public class NRPInstance
         int totalEnhancement = 0;
         List< Integer > enhancementCosts = new ArrayList< Integer >();
 
-        try ( BufferedReader br = new BufferedReader( new FileReader( fileName ) ) ) {
+        // new BufferedReader( new FileReader( fileName ) )
+        Path pathToInstanceFile = FileSystems.getDefault().getPath( ".", fileName );
+        try ( BufferedReader br = Files.newBufferedReader( pathToInstanceFile ) ) {
 
             /*
              * Get enhancement costs array, read it per level, as the format of the file,
