@@ -141,6 +141,6 @@ public class Customer
     public String toString()
     {
         return "Customer ID: " + this.id + ", Profit: " + this.profit + ", Enhancements: "
-                + this.originalEnhancementsSet;
+                + ", Cost: " + this.originalCost + this.originalEnhancementsSet + "\n";
     }
 }

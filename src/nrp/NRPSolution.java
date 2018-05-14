@@ -98,15 +98,15 @@ public class NRPSolution
     protected boolean isSafeAddingACustomer( Customer customer, double costLimit )
     {
         Set< Enhancement > copyOfAcceptedEnhancements = new HashSet<>( this.acceptedEnhancements );
-        double currentTotalCost = 0.0;
 
         copyOfAcceptedEnhancements.addAll( customer.getOriginalEnhancementsSet() );
 
+        double currentTotalCost = 0.0;
         for ( Enhancement enhancement : copyOfAcceptedEnhancements ) {
             currentTotalCost += enhancement.getCost();
         }
 
-        if ( currentTotalCost < costLimit ) {
+        if ( currentTotalCost <= costLimit ) {
             return true;
         } else {
             return false;
@@ -123,7 +123,6 @@ public class NRPSolution
         Set< Customer > acceptedCustomers = new HashSet<>( this.acceptedCustomers );
         Set< Customer > haveNotBeenAcceptedCustomers
                 = new HashSet<>( this.haveNotBeenAcceptedCustomers );
-        Set< Enhancement > acceptedEnhancements = new HashSet<>();
 
         /*
          * Update the haveNotBeenAcceptedCustomers and acceptedEnhancements set
@@ -134,6 +133,7 @@ public class NRPSolution
         /*
          * Update the acceptedEnhancements set
          */
+        Set< Enhancement > acceptedEnhancements = new HashSet<>();
         for ( Customer cust : acceptedCustomers ) {
             acceptedEnhancements.addAll( cust.getOriginalEnhancementsSet() );
         }
@@ -161,7 +161,6 @@ public class NRPSolution
         Set< Customer > acceptedCustomers = new HashSet<>( this.acceptedCustomers );
         Set< Customer > haveNotBeenAcceptedCustomers
                 = new HashSet<>( this.haveNotBeenAcceptedCustomers );
-        Set< Enhancement > acceptedEnhancements = new HashSet<>();
 
         /*
          * Update the haveNotBeenAcceptedCustomers and acceptedEnhancements set
@@ -172,6 +171,7 @@ public class NRPSolution
         /*
          * Update the acceptedEnhancements set
          */
+        Set< Enhancement > acceptedEnhancements = new HashSet<>();
         for ( Customer cust : acceptedCustomers ) {
             acceptedEnhancements.addAll( cust.getOriginalEnhancementsSet() );
         }
@@ -189,7 +189,7 @@ public class NRPSolution
 
         this.acceptedCustomers = acceptedCustomers;
         this.haveNotBeenAcceptedCustomers = haveNotBeenAcceptedCustomers;
-        this.acceptedCustomers = acceptedCustomers;
+        this.acceptedEnhancements = acceptedEnhancements;
         this.setTotalCost();
         this.setTotalProfit();
     }

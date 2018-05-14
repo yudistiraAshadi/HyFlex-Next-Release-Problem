@@ -7,8 +7,6 @@ import java.util.TreeSet;
 
 import AbstractClasses.ProblemDomain;
 
-import nrp.logger.NRPLogger;
-
 public class NRP extends ProblemDomain
 {
     private NRPInstance nrpInstance;
@@ -18,7 +16,6 @@ public class NRP extends ProblemDomain
     public NRP( long seed )
     {
         super( seed );
-        NRPLogger.init();
     }
 
     @Override
@@ -42,10 +39,10 @@ public class NRP extends ProblemDomain
             case 3:
                 this.deleteLowestProfitCostRatioAddHighestProfitCostRatio( solutionSourceIndex,
                         solutionDestinationIndex );
-                break;
             default:
-                System.err.println( "heuristic does not exist" );
-                System.exit( -1 );
+                this.deleteBiggestCostAddSmallestCost( solutionSourceIndex,
+                        solutionDestinationIndex );
+                break;
         }
 
         ++this.heuristicCallRecord[ heuristicID ];
@@ -53,15 +50,12 @@ public class NRP extends ProblemDomain
                 = (int) ( (long) this.heuristicCallTimeRecord[ heuristicID ]
                         + ( System.currentTimeMillis() - startTime ) );
 
-        double currentTotalProfit = this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
+        /*
+         * Verify best solution or not
+         */
         this.verifyBestSolution( this.nrpSolutions[ solutionDestinationIndex ] );
 
-        /*
-         * Log the function
-         */
-        NRPLogger.logApplyHeuristic();
-
-        return currentTotalProfit;
+        return this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
     }
 
     @Override
@@ -96,15 +90,12 @@ public class NRP extends ProblemDomain
                 = (int) ( (long) this.heuristicCallTimeRecord[ heuristicID ]
                         + ( System.currentTimeMillis() - startTime ) );
 
-        double currentTotalProfit = this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
+        /*
+         * Verify best solution or not
+         */
         this.verifyBestSolution( this.nrpSolutions[ solutionDestinationIndex ] );
 
-        /*
-         * Log the function
-         */
-        NRPLogger.logApplyHeuristic();
-
-        return currentTotalProfit;
+        return this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
     }
 
     /**
@@ -127,11 +118,6 @@ public class NRP extends ProblemDomain
      */
     private void randomDeletionAndFirstAdding( int sourceIndex, int targetIndex )
     {
-        /*
-         * Start time tracking
-         */
-        long start = System.currentTimeMillis();
-
         NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
         Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
 
@@ -161,12 +147,6 @@ public class NRP extends ProblemDomain
             }
         }
 
-        /*
-         * Finish time tracking
-         */
-        long elapsedTime = System.currentTimeMillis() - start;
-        NRPLogger.logRandomDeletionAndFirstAdding( elapsedTime );
-
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
     }
 
@@ -176,11 +156,6 @@ public class NRP extends ProblemDomain
      */
     private void deleteBiggestCostAddSmallestCost( int sourceIndex, int targetIndex )
     {
-        /*
-         * Start time tracking
-         */
-        long start = System.currentTimeMillis();
-
         NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
         Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
 
@@ -230,16 +205,11 @@ public class NRP extends ProblemDomain
          */
         double costLimit = this.nrpInstance.getCostLimit();
         for ( Customer customer : customersSetFromLowestToBiggestCost ) {
-            if ( currentSolution.isSafeAddingACustomer( customer, costLimit ) ) {
+            if ( currentSolution.isSafeAddingACustomer( customer, costLimit )
+                    && ( customer.getId() != theBiggestCostCustomerId ) ) {
                 currentSolution.addAnAcceptedCustomer( customer );
             }
         }
-
-        /*
-         * Finish time tracking
-         */
-        long elapsedTime = System.currentTimeMillis() - start;
-        NRPLogger.logdeleteBiggestCostAddSmallestCost( elapsedTime );
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
     }
@@ -250,11 +220,6 @@ public class NRP extends ProblemDomain
      */
     private void deleteSmallestProfitAddBiggestProfit( int sourceIndex, int targetIndex )
     {
-        /*
-         * Start time tracking
-         */
-        long start = System.currentTimeMillis();
-
         NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
         Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
 
@@ -304,16 +269,11 @@ public class NRP extends ProblemDomain
          */
         double costLimit = this.nrpInstance.getCostLimit();
         for ( Customer customer : customersSetFromBiggestToLowestProfit ) {
-            if ( currentSolution.isSafeAddingACustomer( customer, costLimit ) ) {
+            if ( currentSolution.isSafeAddingACustomer( customer, costLimit )
+                    && ( customer.getId() != theSmallestProfitCustomerId ) ) {
                 currentSolution.addAnAcceptedCustomer( customer );
             }
         }
-
-        /*
-         * Finish time tracking
-         */
-        long elapsedTime = System.currentTimeMillis() - start;
-        NRPLogger.deleteSmallestProfitAddBiggestProfit( elapsedTime );
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
     }
@@ -325,11 +285,6 @@ public class NRP extends ProblemDomain
     private void deleteLowestProfitCostRatioAddHighestProfitCostRatio( int sourceIndex,
             int targetIndex )
     {
-        /*
-         * Start time tracking
-         */
-        long start = System.currentTimeMillis();
-
         NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
         Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
 
@@ -381,16 +336,11 @@ public class NRP extends ProblemDomain
          */
         double costLimit = this.nrpInstance.getCostLimit();
         for ( Customer customer : customersSetFromBiggestToLowestProfitCostRatio ) {
-            if ( currentSolution.isSafeAddingACustomer( customer, costLimit ) ) {
+            if ( currentSolution.isSafeAddingACustomer( customer, costLimit )
+                    && ( customer.getId() != theSmallestProfitCostRatioCustomerId ) ) {
                 currentSolution.addAnAcceptedCustomer( customer );
             }
         }
-
-        /*
-         * Finish time tracking
-         */
-        long elapsedTime = System.currentTimeMillis() - start;
-        NRPLogger.deleteLowestProfitCostRatioAddHighestProfitCostRatio( elapsedTime );
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
     }
@@ -430,9 +380,22 @@ public class NRP extends ProblemDomain
     }
 
     @Override
-    public int[] getHeuristicsOfType( HeuristicType arg0 )
+    public int[] getHeuristicsOfType( HeuristicType heuristicType )
     {
-        // TODO Auto-generated method stub
+        if ( heuristicType == ProblemDomain.HeuristicType.MUTATION ) {
+
+            return new int[] { 0, 1, 2, 3 };
+        }
+        if ( heuristicType == ProblemDomain.HeuristicType.RUIN_RECREATE ) {
+            return new int[ 0 ];
+        }
+        if ( heuristicType == ProblemDomain.HeuristicType.LOCAL_SEARCH ) {
+            return new int[ 0 ];
+        }
+        if ( heuristicType == ProblemDomain.HeuristicType.CROSSOVER ) {
+            return new int[ 0 ];
+        }
+
         return null;
     }
 
@@ -481,8 +444,6 @@ public class NRP extends ProblemDomain
                 customer = customersIterator.next();
                 if ( initialSolution.isSafeAddingACustomer( customer, costLimit ) ) {
                     initialSolution.addAnAcceptedCustomer( customer );
-                } else {
-                    break;
                 }
             }
         }
