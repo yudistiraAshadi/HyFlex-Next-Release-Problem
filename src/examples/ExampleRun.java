@@ -24,7 +24,7 @@ public class ExampleRun {
 	public static void main(String[] args) {
 		
 		long seed = 1234;
-		long totalExecutionTime = 10000;
+		long totalExecutionTime = 60000;
 		
 		SelectionMethodType selectionType = SelectionMethodType.AdaptiveLimitedLAassistedDHSMentorSTD;
 		AcceptanceCriterionType acceptanceType = AcceptanceCriterionType.AdaptiveIterationLimitedListBasedTA;
@@ -43,7 +43,7 @@ public class ExampleRun {
 				                                               resultFileName, selectionType, acceptanceType);
 
 		//we must load an instance within the problem domain, in this case we choose instance 2
-		problem.loadInstance(1);
+		problem.loadInstance(5);
 		
 		//we must set the time limit for the hyper-heuristic in milliseconds
 		hyper_heuristic_object.setTimeLimit(totalExecutionTime);

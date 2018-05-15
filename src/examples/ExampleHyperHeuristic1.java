@@ -106,7 +106,7 @@ public class ExampleHyperHeuristic1 extends HyperHeuristic
             // NRP is implemented as maximisation problem, as it objective is to get as much
             // profit as possible. A bigger
             // fitness means a better solution.
-            if ( delta <= 0 ) {
+            if ( delta > 0 ) {
                 // if there is an improvement then we 'accept' the solution by copying the new
                 // solution into memory index 0
                 problem.copySolution( 1, 0 );

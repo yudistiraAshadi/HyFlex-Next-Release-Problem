@@ -110,7 +110,7 @@ public class NRP extends ProblemDomain
         if ( currentSolution.getTotalProfit() > this.bestSolution.getTotalProfit() ) {
             this.bestSolution = new NRPSolution( currentSolution );
 
-            System.out.println( this.getBestSolutionValue() );
+            System.out.println( this.getBestSolutionValue() + " -- " + currentSolution.getTotalProfit());
         }
     }
 
@@ -376,13 +376,13 @@ public class NRP extends ProblemDomain
     @Override
     public double getBestSolutionValue()
     {
-        return this.bestSolution.getTotalProfit();
+        return 1.0 / this.bestSolution.getTotalProfit();
     }
 
     @Override
     public double getFunctionValue( int solutionIndex )
     {
-        return this.nrpSolutions[ solutionIndex ].getTotalProfit();
+        return 1.0 / this.nrpSolutions[ solutionIndex ].getTotalProfit();
     }
 
     @Override
