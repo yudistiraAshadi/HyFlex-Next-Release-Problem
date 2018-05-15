@@ -15,7 +15,6 @@ import be.kuleuven.kahosl.util.WriteInfo;
 import nrp.NRP;
 import AbstractClasses.HyperHeuristic;
 import AbstractClasses.ProblemDomain;
-import SAT.SAT;
 
 /**
  * This class show hows to run GIHH
@@ -44,7 +43,7 @@ public class ExampleRun {
 				                                               resultFileName, selectionType, acceptanceType);
 
 		//we must load an instance within the problem domain, in this case we choose instance 2
-		problem.loadInstance(5);
+		problem.loadInstance(1);
 		
 		//we must set the time limit for the hyper-heuristic in milliseconds
 		hyper_heuristic_object.setTimeLimit(totalExecutionTime);

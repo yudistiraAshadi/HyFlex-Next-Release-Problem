@@ -44,6 +44,8 @@ public class NRPInstance
 
     /**
      * Initialize the instance by reading the instance files
+     * 
+     * @param instanceId
      */
     private void initializeTheInstance( int instanceId )
     {

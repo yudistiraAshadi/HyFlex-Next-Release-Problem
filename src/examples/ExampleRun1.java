@@ -25,11 +25,11 @@ public class ExampleRun1
 
         // we must load an instance within the problem domain, in this case we choose
         // instance 1
-        problem.loadInstance( 5 );
+        problem.loadInstance( 1 );
 
         // we must set the time limit for the hyper-heuristic in milliseconds, in this
-        // example we set the time limit to 1 minute
-        hyper_heuristic_object.setTimeLimit( 60000 );
+        // example we set the time limit to 30 seconds
+        hyper_heuristic_object.setTimeLimit( 30000 );
 
         // a key step is to assign the ProblemDomain object to the HyperHeuristic
         // object.

@@ -1,9 +1,11 @@
 package nrp;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import AbstractClasses.ProblemDomain;
 
@@ -29,20 +31,20 @@ public class NRP extends ProblemDomain
                 this.randomDeletionAndFirstAdding( solutionSourceIndex, solutionDestinationIndex );
                 break;
             case 1:
-                this.deleteBiggestCostAddSmallestCost( solutionSourceIndex,
+                this.deleteHighestCostAddLowestCost( solutionSourceIndex,
                         solutionDestinationIndex );
                 break;
             case 2:
-                this.deleteSmallestProfitAddBiggestProfit( solutionSourceIndex,
+                this.deleteLowestProfitAddHighestProfit( solutionSourceIndex,
                         solutionDestinationIndex );
                 break;
             case 3:
                 this.deleteLowestProfitCostRatioAddHighestProfitCostRatio( solutionSourceIndex,
                         solutionDestinationIndex );
-            default:
-                this.deleteBiggestCostAddSmallestCost( solutionSourceIndex,
-                        solutionDestinationIndex );
                 break;
+            default:
+                System.err.println( "heuristic does not exist" );
+                System.exit( -1 );
         }
 
         ++this.heuristicCallRecord[ heuristicID ];
@@ -69,11 +71,11 @@ public class NRP extends ProblemDomain
                 this.randomDeletionAndFirstAdding( solutionSourceIndex1, solutionDestinationIndex );
                 break;
             case 1:
-                this.deleteBiggestCostAddSmallestCost( solutionSourceIndex1,
+                this.deleteHighestCostAddLowestCost( solutionSourceIndex1,
                         solutionDestinationIndex );
                 break;
             case 2:
-                this.deleteSmallestProfitAddBiggestProfit( solutionSourceIndex1,
+                this.deleteLowestProfitAddHighestProfit( solutionSourceIndex1,
                         solutionDestinationIndex );
                 break;
             case 3:
@@ -118,30 +120,40 @@ public class NRP extends ProblemDomain
      */
     private void randomDeletionAndFirstAdding( int sourceIndex, int targetIndex )
     {
+        /*
+         * Get currentSolution and customersList
+         */
         NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
-        Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
+        Set< Customer > acceptedCustomersSet = currentSolution.getAcceptedCustomers();
+
+        List< Customer > acceptedCustomersList = new ArrayList<>( acceptedCustomersSet );
 
         /*
          * Select a random number between 0 ~ totalAcceptedCustomers
          */
-        int totalAcceptedCustomers = customersSet.size();
+        int totalAcceptedCustomers = acceptedCustomersList.size();
         int randomNumber = this.rng.nextInt( totalAcceptedCustomers );
 
         /*
          * Remove the selected entry
          */
-        Iterator< Customer > customersIterator = customersSet.iterator();
-        for ( int i = 0; i < randomNumber; i++ ) {
-            customersIterator.next();
-        }
-        Customer removedCustomer = customersIterator.next();
+        Customer removedCustomer = acceptedCustomersList.get( randomNumber );
         currentSolution.removeAnAcceptedCustomer( removedCustomer );
 
         /*
-         * Add all customer if it is safe to add
+         * Randomly order the haveNotBeenAcceptedCustomers set
+         */
+        Set< Customer > haveNotBeenAcceptedCustomersSet
+                = currentSolution.getHaveNotBeenAcceptedCustomers();
+        List< Customer > haveNotBeenAcceptedCustomersList
+                = new ArrayList<>( haveNotBeenAcceptedCustomersSet );
+        Collections.shuffle( haveNotBeenAcceptedCustomersList );
+
+        /*
+         * Add all customer randomly if cost is sufficient
          */
         double costLimit = this.nrpInstance.getCostLimit();
-        for ( Customer customer : currentSolution.getHaveNotBeenAcceptedCustomers() ) {
+        for ( Customer customer : haveNotBeenAcceptedCustomersList ) {
             if ( currentSolution.isSafeAddingACustomer( customer, costLimit ) ) {
                 currentSolution.addAnAcceptedCustomer( customer );
             }
@@ -151,62 +163,59 @@ public class NRP extends ProblemDomain
     }
 
     /**
-     * Heuristic #2 Delete a customer with the biggest cost and add customer(s) with
-     * sufficient fund, start from the smallest cost customers
+     * Heuristic #2 Delete a customer with the highest cost and add customer(s) with
+     * sufficient fund, start from the lowest cost customers
      */
-    private void deleteBiggestCostAddSmallestCost( int sourceIndex, int targetIndex )
+    private void deleteHighestCostAddLowestCost( int sourceIndex, int targetIndex )
     {
+        /*
+         * Get currentSolution and order customersList from highest to lowest cost
+         */
         NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
-        Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
+        Set< Customer > acceptedCustomersSet = currentSolution.getAcceptedCustomers();
 
-        /*
-         * Find the biggest cost customer
-         */
-        double biggestCost = 0.0;
-        int theBiggestCostCustomerId = 0;
-        for ( Customer customer : customersSet ) {
-            double customerCost = customer.getOriginalCost();
+        List< Customer > acceptedCustomersList = new ArrayList<>( acceptedCustomersSet );
+        Collections.sort( acceptedCustomersList, new Comparator< Customer >() {
 
-            if ( customerCost > biggestCost ) {
-                biggestCost = customerCost;
-                theBiggestCostCustomerId = customer.getId();
+            @Override
+            public int compare( Customer cust1, Customer cust2 )
+            {
+                return Double.compare( cust2.getOriginalCost(), cust1.getOriginalCost() );
             }
-        }
+
+        } );
 
         /*
-         * Delete the biggest cost customer from the set
+         * Remove the highest cost customer
          */
-        for ( Customer customer : customersSet ) {
-            if ( customer.getId() == theBiggestCostCustomerId ) {
-                currentSolution.removeAnAcceptedCustomer( customer );
-                break;
-            }
-        }
+        Customer removedCustomer = acceptedCustomersList.get( 0 );
+        currentSolution.removeAnAcceptedCustomer( removedCustomer );
 
         /*
-         * Reorder the haveNotBeenAcceptedCustomers set
+         * Reorder the haveNotBeenAcceptedCustomers set from lowest to highest cost
          */
-        Set< Customer > haveNotBeenAcceptedCustomers
+        Set< Customer > haveNotBeenAcceptedCustomersSet
                 = currentSolution.getHaveNotBeenAcceptedCustomers();
-        Set< Customer > customersSetFromLowestToBiggestCost
-                = new TreeSet< Customer >( new Comparator< Customer >() {
+        List< Customer > haveNotBeenAcceptedCustomersList
+                = new ArrayList<>( haveNotBeenAcceptedCustomersSet );
+        Collections.sort( haveNotBeenAcceptedCustomersList, new Comparator< Customer >() {
 
-                    @Override
-                    public int compare( Customer cust1, Customer cust2 )
-                    {
-                        return Double.compare( cust1.getOriginalCost(), cust2.getOriginalCost() );
-                    }
+            @Override
+            public int compare( Customer cust1, Customer cust2 )
+            {
+                return Double.compare( cust2.getOriginalCost(), cust1.getOriginalCost() );
+            }
 
-                } );
-        customersSetFromLowestToBiggestCost.addAll( haveNotBeenAcceptedCustomers );
+        } );
 
         /*
          * Add all customer if cost is sufficient, start from the lowest cost
          */
         double costLimit = this.nrpInstance.getCostLimit();
-        for ( Customer customer : customersSetFromLowestToBiggestCost ) {
+        int removedCustomerID = removedCustomer.getId();
+        for ( Customer customer : haveNotBeenAcceptedCustomersList ) {
             if ( currentSolution.isSafeAddingACustomer( customer, costLimit )
-                    && ( customer.getId() != theBiggestCostCustomerId ) ) {
+                    && ( customer.getId() != removedCustomerID ) ) {
                 currentSolution.addAnAcceptedCustomer( customer );
             }
         }
@@ -215,62 +224,59 @@ public class NRP extends ProblemDomain
     }
 
     /**
-     * Heuristic #3 Delete an acceptedCustomer with the smallest profit and add
-     * customer(s) with sufficient fund with the biggest profit
+     * Heuristic #3 Delete an acceptedCustomer with the lowest profit and add
+     * customer(s) with sufficient fund with the highest profit
      */
-    private void deleteSmallestProfitAddBiggestProfit( int sourceIndex, int targetIndex )
+    private void deleteLowestProfitAddHighestProfit( int sourceIndex, int targetIndex )
     {
+        /*
+         * Get currentSolution and order customersList from lowest to highest profit
+         */
         NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
-        Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
+        Set< Customer > acceptedCustomersSet = currentSolution.getAcceptedCustomers();
 
-        /*
-         * Find the smallest profit customer
-         */
-        double smallestProfit = Double.POSITIVE_INFINITY;
-        int theSmallestProfitCustomerId = 0;
-        for ( Customer customer : customersSet ) {
-            double customerProfit = customer.getProfit();
+        List< Customer > acceptedCustomersList = new ArrayList<>( acceptedCustomersSet );
+        Collections.sort( acceptedCustomersList, new Comparator< Customer >() {
 
-            if ( customerProfit < smallestProfit ) {
-                smallestProfit = customerProfit;
-                theSmallestProfitCustomerId = customer.getId();
+            @Override
+            public int compare( Customer cust1, Customer cust2 )
+            {
+                return Double.compare( cust1.getProfit(), cust2.getProfit() );
             }
-        }
+
+        } );
 
         /*
-         * Delete the smallest cost customer from the set
+         * Remove the lowest profit customer
          */
-        for ( Customer customer : customersSet ) {
-            if ( customer.getId() == theSmallestProfitCustomerId ) {
-                currentSolution.removeAnAcceptedCustomer( customer );
-                break;
-            }
-        }
+        Customer removedCustomer = acceptedCustomersList.get( 0 );
+        currentSolution.removeAnAcceptedCustomer( removedCustomer );
 
         /*
-         * Reorder the haveNotBeenAcceptedCustomers set
+         * Reorder the haveNotBeenAcceptedCustomers set from highest to lowest profit
          */
-        Set< Customer > haveNotBeenAcceptedCustomers
+        Set< Customer > haveNotBeenAcceptedCustomersSet
                 = currentSolution.getHaveNotBeenAcceptedCustomers();
-        Set< Customer > customersSetFromBiggestToLowestProfit
-                = new TreeSet< Customer >( new Comparator< Customer >() {
+        List< Customer > haveNotBeenAcceptedCustomersList
+                = new ArrayList<>( haveNotBeenAcceptedCustomersSet );
+        Collections.sort( haveNotBeenAcceptedCustomersList, new Comparator< Customer >() {
 
-                    @Override
-                    public int compare( Customer cust1, Customer cust2 )
-                    {
-                        return Double.compare( cust2.getProfit(), cust1.getProfit() );
-                    }
+            @Override
+            public int compare( Customer cust1, Customer cust2 )
+            {
+                return Double.compare( cust2.getProfit(), cust1.getProfit() );
+            }
 
-                } );
-        customersSetFromBiggestToLowestProfit.addAll( haveNotBeenAcceptedCustomers );
+        } );
 
         /*
-         * Add all customer if cost is sufficient, start from the lowest cost
+         * Add all customer if cost is sufficient, start from the highest profit
          */
         double costLimit = this.nrpInstance.getCostLimit();
-        for ( Customer customer : customersSetFromBiggestToLowestProfit ) {
+        int removedCustomerID = removedCustomer.getId();
+        for ( Customer customer : haveNotBeenAcceptedCustomersList ) {
             if ( currentSolution.isSafeAddingACustomer( customer, costLimit )
-                    && ( customer.getId() != theSmallestProfitCustomerId ) ) {
+                    && ( customer.getId() != removedCustomerID ) ) {
                 currentSolution.addAnAcceptedCustomer( customer );
             }
         }
@@ -279,65 +285,65 @@ public class NRP extends ProblemDomain
     }
 
     /**
-     * Heuristic #4 Delete an acceptedCustomer with the smallest profit/cost ratio
-     * and add customer(s) with sufficient fund with the biggest profit/cost ratio
+     * Heuristic #4 Delete an acceptedCustomer with the lowest profit/cost ratio and
+     * add customer(s) with sufficient fund with the highest profit/cost ratio
      */
     private void deleteLowestProfitCostRatioAddHighestProfitCostRatio( int sourceIndex,
             int targetIndex )
     {
+        /*
+         * Get currentSolution and order customersList from lowest to highest
+         * profit/cost ratio
+         */
         NRPSolution currentSolution = new NRPSolution( this.nrpSolutions[ sourceIndex ] );
-        Set< Customer > customersSet = currentSolution.getAcceptedCustomers();
+        Set< Customer > acceptedCustomersSet = currentSolution.getAcceptedCustomers();
 
-        /*
-         * Find the smallest profit/cost ratio customer
-         */
-        double smallestProfitCostRatio = Double.POSITIVE_INFINITY;
-        int theSmallestProfitCostRatioCustomerId = 0;
-        for ( Customer customer : customersSet ) {
-            double customerProfitCostRatio = customer.getProfit() / customer.getOriginalCost();
+        List< Customer > acceptedCustomersList = new ArrayList<>( acceptedCustomersSet );
+        Collections.sort( acceptedCustomersList, new Comparator< Customer >() {
 
-            if ( customerProfitCostRatio < smallestProfitCostRatio ) {
-                smallestProfitCostRatio = customerProfitCostRatio;
-                theSmallestProfitCostRatioCustomerId = customer.getId();
+            @Override
+            public int compare( Customer cust1, Customer cust2 )
+            {
+                return Double.compare( cust1.getProfit() / cust1.getOriginalCost(),
+                        cust2.getProfit() / cust2.getOriginalCost() );
             }
-        }
+
+        } );
 
         /*
-         * Delete the smallest cost customer from the set
+         * Remove the lowest profit profit/cost ratio
          */
-        for ( Customer customer : customersSet ) {
-            if ( customer.getId() == theSmallestProfitCostRatioCustomerId ) {
-                currentSolution.removeAnAcceptedCustomer( customer );
-                break;
-            }
-        }
+        Customer removedCustomer = acceptedCustomersList.get( 0 );
+        currentSolution.removeAnAcceptedCustomer( removedCustomer );
 
         /*
-         * Reorder the haveNotBeenAcceptedCustomers set
+         * Reorder the haveNotBeenAcceptedCustomers set from highest to lowest
+         * profit/cost ratio
          */
-        Set< Customer > haveNotBeenAcceptedCustomers
+        Set< Customer > haveNotBeenAcceptedCustomersSet
                 = currentSolution.getHaveNotBeenAcceptedCustomers();
-        Set< Customer > customersSetFromBiggestToLowestProfitCostRatio
-                = new TreeSet< Customer >( new Comparator< Customer >() {
+        List< Customer > haveNotBeenAcceptedCustomersList
+                = new ArrayList<>( haveNotBeenAcceptedCustomersSet );
+        Collections.sort( haveNotBeenAcceptedCustomersList, new Comparator< Customer >() {
 
-                    @Override
-                    public int compare( Customer cust1, Customer cust2 )
-                    {
+            @Override
+            public int compare( Customer cust1, Customer cust2 )
+            {
+                return Double.compare( cust2.getProfit() / cust2.getOriginalCost(),
+                        cust1.getProfit() / cust1.getOriginalCost() );
+            }
 
-                        return Double.compare( cust2.getProfit() / cust2.getOriginalCost(),
-                                cust1.getProfit() / cust1.getOriginalCost() );
-                    }
-
-                } );
-        customersSetFromBiggestToLowestProfitCostRatio.addAll( haveNotBeenAcceptedCustomers );
+        } );
 
         /*
-         * Add all customer if cost is sufficient, start from the lowest cost
+         * Add all customer if cost is sufficient, start from the highest profit/cost
+         * ratio
          */
         double costLimit = this.nrpInstance.getCostLimit();
-        for ( Customer customer : customersSetFromBiggestToLowestProfitCostRatio ) {
+        int removedCustomerID = removedCustomer.getId();
+        for ( Customer customer : haveNotBeenAcceptedCustomersList ) {
             if ( currentSolution.isSafeAddingACustomer( customer, costLimit )
-                    && ( customer.getId() != theSmallestProfitCostRatioCustomerId ) ) {
+                    && ( customer.getId() != removedCustomerID ) ) {
                 currentSolution.addAnAcceptedCustomer( customer );
             }
         }
