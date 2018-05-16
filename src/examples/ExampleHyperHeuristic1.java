@@ -82,7 +82,7 @@ public class ExampleHyperHeuristic1 extends HyperHeuristic
 
         // initialise the variable which keeps track of the current objective function
         // value
-        double current_obj_function_value = 0.0;
+        double current_obj_function_value = Double.POSITIVE_INFINITY;
 
         // initialise the solution at index 0 in the solution memory array
         problem.initialiseSolution( 0 );
@@ -103,9 +103,7 @@ public class ExampleHyperHeuristic1 extends HyperHeuristic
             double delta = current_obj_function_value - new_obj_function_value;
 //            System.out.println("Heuristic: " + heuristic_to_apply + ", function value: " + new_obj_function_value);
 
-            // NRP is implemented as maximisation problem, as it objective is to get as much
-            // profit as possible. A bigger
-            // fitness means a better solution.
+            // A smaller fitness means a better solution.
             if ( delta > 0 ) {
                 // if there is an improvement then we 'accept' the solution by copying the new
                 // solution into memory index 0

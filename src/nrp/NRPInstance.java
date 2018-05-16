@@ -6,18 +6,13 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class NRPInstance
 {
-    private Map< Integer, Enhancement > enhancementsMap = new HashMap<>();
-    private Map< Integer, Customer > customersMap = new HashMap<>();
-    private Set< Enhancement > enhancementsSet = new HashSet<>();
-    private Set< Customer > customersSet = new HashSet<>();
+    private List< Enhancement > enhancementsList = new ArrayList<>();
+    private List< Customer > customersList = new ArrayList<>();
+
     private int numberOfEnhancements;
     private int numberOfCustomers;
 
@@ -36,8 +31,8 @@ public class NRPInstance
         /*
          * At the end of initialization, count the total of enhancements and customers
          */
-        this.numberOfEnhancements = this.enhancementsMap.size();
-        this.numberOfCustomers = this.customersMap.size();
+        this.numberOfEnhancements = this.enhancementsList.size();
+        this.numberOfCustomers = this.customersList.size();
         this.setTotalCost();
         this.setCostLimit();
     }
@@ -52,7 +47,6 @@ public class NRPInstance
         int totalEnhancement = 0;
         List< Integer > enhancementCosts = new ArrayList< Integer >();
 
-        // new BufferedReader( new FileReader( fileName ) )
         Path pathToInstanceFile
                 = FileSystems.getDefault().getPath( ".", fileName + instanceId + ".txt" );
         try ( BufferedReader br = Files.newBufferedReader( pathToInstanceFile ) ) {
@@ -74,7 +68,7 @@ public class NRPInstance
             }
 
             /*
-             * Build enhancements map
+             * Build enhancements list
              */
             for ( int i = 0; i < totalEnhancement; i++ ) {
 
@@ -82,11 +76,11 @@ public class NRPInstance
                 Enhancement enhancement
                         = new Enhancement( enhancementId, enhancementCosts.get( i ) );
 
-                this.enhancementsMap.put( enhancementId, enhancement );
+                this.enhancementsList.add( enhancement );
             }
 
             /*
-             * Add dependency enhancement to the map
+             * Add dependency enhancement to the list
              */
             int numberOfDependencies = Integer.parseInt( br.readLine() );
             for ( int i = 0; i < numberOfDependencies; i++ ) {
@@ -95,8 +89,8 @@ public class NRPInstance
                 int enhancementId = Integer.parseInt( enhancementAndDependencyPair[ 1 ] );
                 int dependencyId = Integer.parseInt( enhancementAndDependencyPair[ 0 ] );
 
-                Enhancement enhancement = this.enhancementsMap.get( enhancementId );
-                Enhancement dependency = this.enhancementsMap.get( dependencyId );
+                Enhancement enhancement = this.enhancementsList.get( enhancementId - 1 );
+                Enhancement dependency = this.enhancementsList.get( dependencyId - 1 );
                 enhancement.addDependencyEnhancement( dependency );
             }
 
@@ -110,73 +104,28 @@ public class NRPInstance
                 String[] customerInformation = br.readLine().split( "\\s+" );
                 int profitOfCustomer = Integer.parseInt( customerInformation[ 0 ] );
                 int numberOfRequests = Integer.parseInt( customerInformation[ 1 ] );
-                Set< Enhancement > enhancementSet = new HashSet<>();
+                List< Enhancement > enhancementsList = new ArrayList<>();
                 for ( int j = 0; j < numberOfRequests; j++ ) {
 
                     int enhancementId = Integer.parseInt( customerInformation[ j + 2 ] );
-                    enhancementSet.add( enhancementsMap.get( enhancementId ) );
+                    enhancementsList.add( this.enhancementsList.get( enhancementId - 1 ) );
                 }
 
                 // Add enhancements dependencies
-                enhancementSet = this.getTheEnhancementSetWithItsDependencies( enhancementSet );
+                enhancementsList = this.getTheEnhancementsListWithItsDependencies(
+                        new ArrayList<>( enhancementsList ) );
 
                 int customerId = i + 1;
-                Customer customer = new Customer( customerId, profitOfCustomer, enhancementSet,
+                Customer customer = new Customer( customerId, profitOfCustomer, enhancementsList,
                         numberOfRequests );
-                this.customersMap.put( customerId, customer );
+                this.customersList.add( customer );
             }
-
-            /*
-             * Create enhancementsSet and customersSet from enhancementsMap and customersMap
-             */
-            this.enhancementsSet = new HashSet<>( this.enhancementsMap.values() );
-            this.customersSet = new HashSet<>( this.customersMap.values() );
+            
+            System.out.println( "numberOfCustomers: " + numberOfCustomers );
 
         } catch ( IOException e ) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * @param enhancementIdSet
-     * @return the enhancement set along with its dependencies
-     */
-    private Set< Enhancement > getTheEnhancementSetWithItsDependencies(
-            Set< Enhancement > enhancementIdSet )
-    {
-        Set< Enhancement > newEnhancementIdSet = new HashSet<>( enhancementIdSet );
-        for ( Enhancement enhancement : enhancementIdSet ) {
-
-            Set< Enhancement > currentIntegerSet = this.getEnhancementDependencies( enhancement );
-
-            if ( !currentIntegerSet.isEmpty() ) {
-
-                if ( currentIntegerSet.size() > 1 ) {
-                    Set< Enhancement > tempIntegerSet
-                            = this.getTheEnhancementSetWithItsDependencies( currentIntegerSet );
-
-                    newEnhancementIdSet.addAll( tempIntegerSet );
-                } else {
-                    newEnhancementIdSet.addAll( currentIntegerSet );
-                }
-            }
-        }
-
-        return newEnhancementIdSet;
-    }
-
-    /**
-     * @param enhancement
-     * @return the dependencies set of an enhancement
-     */
-    private Set< Enhancement > getEnhancementDependencies( Enhancement enhancement )
-    {
-        int enhancementId = enhancement.getId();
-        Enhancement parentEnhancement = this.enhancementsMap.get( enhancementId );
-
-        Set< Enhancement > parentEnhancementSet = parentEnhancement.getDependencyEnhancementsSet();
-
-        return parentEnhancementSet;
     }
 
     /**
@@ -185,7 +134,7 @@ public class NRPInstance
     private void setTotalCost()
     {
         double totalCost = 0.0;
-        for ( Enhancement enhancement : this.enhancementsMap.values() ) {
+        for ( Enhancement enhancement : this.enhancementsList ) {
             totalCost += enhancement.getCost();
         }
 
@@ -207,43 +156,23 @@ public class NRPInstance
     }
 
     /**
-     * @return the enhancementsMap
+     * @return the enhancementsList
      */
-    protected Map< Integer, Enhancement > getEnhancementsMap()
+    protected List< Enhancement > getEnhancementsList()
     {
-        Map< Integer, Enhancement > copyOfEnhancementsMap = new HashMap<>( this.enhancementsMap );
+        List< Enhancement > copyOfEnhancementsList = new ArrayList<>( this.enhancementsList );
 
-        return copyOfEnhancementsMap;
+        return copyOfEnhancementsList;
     }
 
     /**
-     * @return the customersMap
+     * @return the customersList
      */
-    protected Map< Integer, Customer > getCustomersMap()
+    protected List< Customer > getCustomersList()
     {
-        Map< Integer, Customer > copyOfCustomersMap = new HashMap<>( this.customersMap );
+        List< Customer > copyOfCustomersList = new ArrayList<>( this.customersList );
 
-        return copyOfCustomersMap;
-    }
-
-    /**
-     * @return the enhancementsSet
-     */
-    protected Set< Enhancement > getEnhancementsSet()
-    {
-        Set< Enhancement > copyOfEnhancementsSet = new HashSet<>( this.enhancementsSet );
-
-        return copyOfEnhancementsSet;
-    }
-
-    /**
-     * @return the customersSet
-     */
-    protected Set< Customer > getCustomersSet()
-    {
-        Set< Customer > copyOfCustomersSet = new HashSet<>( this.customersSet );
-
-        return copyOfCustomersSet;
+        return copyOfCustomersList;
     }
 
     /**
@@ -285,4 +214,58 @@ public class NRPInstance
     {
         return costLimitRatio;
     }
+
+    /**
+     * @param enhancementIdSet
+     * @return the enhancement set along with its dependencies
+     */
+    private List< Enhancement > getTheEnhancementsListWithItsDependencies(
+            List< Enhancement > enhancementsList )
+    {
+        List< Enhancement > newEnhancementsList = new ArrayList<>( enhancementsList );
+
+        for ( Enhancement enhancement : enhancementsList ) {
+
+            List< Enhancement > currentDependenciesList
+                    = this.getEnhancementDependencies( enhancement );
+
+            if ( !currentDependenciesList.isEmpty() ) {
+
+                if ( currentDependenciesList.size() > 1 ) {
+                    List< Enhancement > dependenciesList = this
+                            .getTheEnhancementsListWithItsDependencies( currentDependenciesList );
+
+                    for (Enhancement dependency : dependenciesList) {
+                        if ( !newEnhancementsList.contains( dependency ) ) {
+                            newEnhancementsList.add( dependency );
+                        }
+                    }
+                } else {
+                    for (Enhancement dependency : currentDependenciesList) {
+                        if ( !newEnhancementsList.contains( dependency ) ) {
+                            newEnhancementsList.add( dependency );
+                        }
+                    }
+                }
+            }
+        }
+
+        return newEnhancementsList;
+    }
+
+    /**
+     * @param enhancement
+     * @return the dependencies set of an enhancement
+     */
+    private List< Enhancement > getEnhancementDependencies( Enhancement enhancement )
+    {
+        int enhancementId = enhancement.getId();
+        Enhancement parentEnhancement = this.enhancementsList.get( enhancementId - 1 );
+
+        List< Enhancement > parentEnhancementsList
+                = parentEnhancement.getDependencyEnhancementsList();
+
+        return parentEnhancementsList;
+    }
+
 }

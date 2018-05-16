@@ -1,7 +1,7 @@
 package nrp;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Customer
 {
@@ -9,10 +9,12 @@ public class Customer
     private double profit;
     private int totalRequestedEnhancements;
 
-    private Set< Enhancement > originalEnhancementsSet = new HashSet<>();
+//    private Set< Enhancement > originalEnhancementsSet = new HashSet<>();
+    private List< Enhancement > originalEnhancementsList = new ArrayList<>();
     private double originalCost;
 
-    private Set< Enhancement > currentEnhancementsSet = new HashSet<>();
+//    private Set< Enhancement > currentEnhancementsSet = new HashSet<>();
+    private List< Enhancement > currentEnhancementsList = new ArrayList<>();
     private double currentCost;
 
     /**
@@ -28,16 +30,16 @@ public class Customer
      * @param profit
      * @param originalEnhancementsSet
      */
-    protected Customer( int id, double profit, Set< Enhancement > originalEnhancementsSet,
+    protected Customer( int id, double profit, List< Enhancement > originalEnhancementsList,
             int totalRequestedEnhancements )
     {
         this.id = id;
         this.profit = profit;
-        this.originalEnhancementsSet = originalEnhancementsSet;
         this.totalRequestedEnhancements = totalRequestedEnhancements;
+        this.originalEnhancementsList = originalEnhancementsList;
         this.setOriginalCost();
     }
-
+    
     /**
      * @return the id
      */
@@ -63,30 +65,6 @@ public class Customer
     }
 
     /**
-     * @return the copy of originalEnhancementSet
-     */
-    protected Set< Enhancement > getOriginalEnhancementsSet()
-    {
-        Set< Enhancement > copyOfOriginalEnhancementsSet
-                = new HashSet<>( this.originalEnhancementsSet );
-
-        return copyOfOriginalEnhancementsSet;
-    }
-
-    /**
-     * Set the originalCost
-     */
-    private void setOriginalCost()
-    {
-        double originalCost = 0;
-        for ( Enhancement enhancement : this.originalEnhancementsSet ) {
-            originalCost += enhancement.getCost();
-        }
-
-        this.originalCost = originalCost;
-    }
-
-    /**
      * @return the originalCost
      */
     protected double getOriginalCost()
@@ -95,22 +73,44 @@ public class Customer
     }
 
     /**
+     * @return the copy of originalEnhancementSet
+     */
+    protected List< Enhancement > getOriginalEnhancementsList()
+    {
+        List< Enhancement > copyOfOriginalEnhancementsList
+                = new ArrayList<>( this.originalEnhancementsList );
+
+        return copyOfOriginalEnhancementsList;
+    }
+    
+    /**
+     * @return the currentCost
+     */
+    protected double getCurrentCost()
+    {
+        return currentCost;
+    }
+    
+    /**
      * @return the currentEnhancementsSet
      */
-    protected Set< Enhancement > getCurrentEnhancementsSet()
+    protected List< Enhancement > getCurrentEnhancementsList()
     {
-        return currentEnhancementsSet;
+        return currentEnhancementsList;
     }
 
-    /**
-     * @param currentEnhancementsSet
-     */
-    protected void setCurrentEnhancementsSet( Set< Enhancement > currentEnhancementsSet )
-    {
-        Set< Enhancement > copyOfCurrentEnhancementSet = new HashSet<>( currentEnhancementsSet );
 
-        this.currentEnhancementsSet = copyOfCurrentEnhancementSet;
-        this.setCurrentCost();
+    /**
+     * Set the originalCost
+     */
+    private void setOriginalCost()
+    {
+        double originalCost = 0;
+        for ( Enhancement enhancement : this.originalEnhancementsList ) {
+            originalCost += enhancement.getCost();
+        }
+
+        this.originalCost = originalCost;
     }
 
     /**
@@ -119,7 +119,7 @@ public class Customer
     private void setCurrentCost()
     {
         double currentCost = 0;
-        for ( Enhancement enhancement : this.currentEnhancementsSet ) {
+        for ( Enhancement enhancement : this.currentEnhancementsList ) {
             currentCost += enhancement.getCost();
         }
 
@@ -127,11 +127,14 @@ public class Customer
     }
 
     /**
-     * @return the currentCost
+     * @param currentEnhancementsSet
      */
-    protected double getCurrentCost()
+    protected void setCurrentEnhancementsList( List< Enhancement > currentEnhancementsList )
     {
-        return currentCost;
+        List< Enhancement > copyOfCurrentEnhancementsList = new ArrayList<>( currentEnhancementsList );
+
+        this.currentEnhancementsList = copyOfCurrentEnhancementsList;
+        this.setCurrentCost();
     }
 
     /**
@@ -141,6 +144,6 @@ public class Customer
     public String toString()
     {
         return "Customer ID: " + this.id + ", Profit: " + this.profit + ", Enhancements: "
-                + ", Cost: " + this.originalCost + this.originalEnhancementsSet + "\n";
+                + ", Cost: " + this.originalCost + this.originalEnhancementsList + "\n";
     }
 }

@@ -1,13 +1,13 @@
 package nrp;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Enhancement
 {
     private int id;
     private double cost;
-    private Set< Enhancement > dependencyEnhancementsSet = new HashSet<>();
+    private List< Enhancement > dependencyEnhancementsList = new ArrayList<>();
 
     /**
      * @param id
@@ -36,14 +36,14 @@ public class Enhancement
     }
 
     /**
-     * @return the copy of enhancementSet
+     * @return the copy of dependencyEnhancementsList
      */
-    protected Set< Enhancement > getDependencyEnhancementsSet()
+    protected List< Enhancement > getDependencyEnhancementsList()
     {
-        Set< Enhancement > copyOfDependencyEnhancementsSet
-                = new HashSet<>( this.dependencyEnhancementsSet );
+        List< Enhancement > copyOfDependencyEnhancementsList
+                = new ArrayList<>( this.dependencyEnhancementsList );
 
-        return copyOfDependencyEnhancementsSet;
+        return copyOfDependencyEnhancementsList;
     }
 
     /**
@@ -53,7 +53,9 @@ public class Enhancement
      */
     protected void addDependencyEnhancement( Enhancement enhancement )
     {
-        this.dependencyEnhancementsSet.add( enhancement );
+        if ( !this.dependencyEnhancementsList.contains( enhancement ) ) {
+            this.dependencyEnhancementsList.add( enhancement );
+        }
     }
 
     /**
@@ -63,6 +65,6 @@ public class Enhancement
     public String toString()
     {
         return "Enhancement ID: " + this.id + ", Cost: " + this.cost + ", Dependencies: "
-                + this.dependencyEnhancementsSet;
+                + this.dependencyEnhancementsList;
     }
 }
