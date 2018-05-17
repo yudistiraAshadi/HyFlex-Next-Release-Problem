@@ -3,6 +3,7 @@ package examples;
 import AbstractClasses.HyperHeuristic;
 import AbstractClasses.ProblemDomain;
 import nrp.NRP;
+import nrp.logger.NRPLogger;
 
 /**
  * This class shows how to run a selected hyper-heuristic on a selected problem
@@ -45,5 +46,7 @@ public class ExampleRun1
 
         // obtain the best solution found within the time limit
         System.out.println( "The best solution value: " + hyper_heuristic_object.getBestSolutionValue() );
+        
+        NRPLogger.logFinish();
     }
 }

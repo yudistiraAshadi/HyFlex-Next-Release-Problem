@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import AbstractClasses.ProblemDomain;
+import nrp.logger.NRPLogger;
 
 public class NRP extends ProblemDomain
 {
@@ -18,6 +19,7 @@ public class NRP extends ProblemDomain
     public NRP( long seed )
     {
         super( seed );
+        NRPLogger.init();
     }
 
     @Override
@@ -109,7 +111,7 @@ public class NRP extends ProblemDomain
     {
         if ( currentSolution.getTotalProfit() > this.bestSolution.getTotalProfit() ) {
             this.bestSolution = new NRPSolution( currentSolution );
-
+            
             System.out.println(
                     this.getBestSolutionValue() + " -- " + currentSolution.getTotalProfit() );
         }
@@ -121,6 +123,8 @@ public class NRP extends ProblemDomain
      */
     private void randomDeletionAndFirstAdding( int sourceIndex, int targetIndex )
     {
+        long startTime = System.nanoTime();
+        
         /*
          * Get currentSolution and customersList
          */
@@ -157,6 +161,11 @@ public class NRP extends ProblemDomain
         }
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
+        
+        long timeElapsed = System.nanoTime() - startTime;
+        
+//        System.out.println( "Heuristic #1 -- " + timeElapsed + " ns" );
+        NRPLogger.logRandomDeletionAndFirstAdding( timeElapsed );
     }
 
     /**
@@ -165,6 +174,8 @@ public class NRP extends ProblemDomain
      */
     private void deleteHighestCostAddLowestCost( int sourceIndex, int targetIndex )
     {
+        long startTime = System.nanoTime();
+        
         /*
          * Get currentSolution and customersList
          */
@@ -215,6 +226,11 @@ public class NRP extends ProblemDomain
         }
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
+        
+        long timeElapsed = System.nanoTime() - startTime;
+//        System.out.println( "Heuristic #2 -- " + timeElapsed + " ns" );
+        
+        NRPLogger.logDeleteHighestCostAddLowestCost( timeElapsed );
     }
 
     /**
@@ -223,6 +239,8 @@ public class NRP extends ProblemDomain
      */
     private void deleteLowestProfitAddHighestProfit( int sourceIndex, int targetIndex )
     {
+        long startTime = System.nanoTime();
+        
         /*
          * Get currentSolution and customersList
          */
@@ -273,6 +291,11 @@ public class NRP extends ProblemDomain
         }
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
+        
+        long timeElapsed = System.nanoTime() - startTime;
+//        System.out.println( "Heuristic #3 -- " + timeElapsed + " ns" );
+        
+        NRPLogger.logDeleteLowestProfitAddHighestProfit( timeElapsed );
     }
 
     /**
@@ -282,6 +305,8 @@ public class NRP extends ProblemDomain
     private void deleteLowestProfitCostRatioAddHighestProfitCostRatio( int sourceIndex,
             int targetIndex )
     {
+        long startTime = System.nanoTime();
+        
         /*
          * Get currentSolution and customersList
          */
@@ -336,6 +361,11 @@ public class NRP extends ProblemDomain
         }
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
+        
+        long timeElapsed = System.nanoTime() - startTime;
+//        System.out.println( "Heuristic #4 -- " + timeElapsed + " ns" );
+        
+        NRPLogger.logDeleteLowestProfitCostRatioAddHighestProfitCostRatio( timeElapsed );
     }
 
     @Override

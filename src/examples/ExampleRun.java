@@ -13,6 +13,7 @@ import be.kuleuven.kahosl.hyperheuristic.GIHH;
 import be.kuleuven.kahosl.selection.SelectionMethodType;
 import be.kuleuven.kahosl.util.WriteInfo;
 import nrp.NRP;
+import nrp.logger.NRPLogger;
 import AbstractClasses.HyperHeuristic;
 import AbstractClasses.ProblemDomain;
 
@@ -58,5 +59,7 @@ public class ExampleRun {
 
 		//obtain the best solution found within the time limit
 		System.out.println("\n\n BEST SLN FOUND: "+hyper_heuristic_object.getBestSolutionValue());
+		
+		NRPLogger.logFinish();
 	}
 }
