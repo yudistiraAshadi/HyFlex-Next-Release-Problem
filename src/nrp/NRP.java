@@ -1,10 +1,12 @@
 package nrp;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import AbstractClasses.ProblemDomain;
@@ -134,37 +136,49 @@ public class NRP extends ProblemDomain
         /*
          * Select a random number between 0 ~ totalAcceptedCustomers
          */
+        Random rand = new Random();
         int totalAcceptedCustomers = acceptedCustomers.size();
-        int randomNumber = this.rng.nextInt( totalAcceptedCustomers );
+        int randomNumberToRmove = rand.nextInt( totalAcceptedCustomers );
 
         /*
          * Remove the selected entry
          */
-        Customer removedCustomer = acceptedCustomers.get( randomNumber );
+        Customer removedCustomer = acceptedCustomers.get( randomNumberToRmove );
         currentSolution.removeAnAcceptedCustomer( removedCustomer );
-
+        
         /*
-         * Randomly order the haveNotBeenAcceptedCustomers list
+         * Add random customer
          */
-        List< Customer > haveNotBeenAcceptedCustomers
-                = currentSolution.getHaveNotBeenAcceptedCustomers();
-        Collections.shuffle( haveNotBeenAcceptedCustomers );
-
-        /*
-         * Add all customer randomly if cost is sufficient
-         */
+        List< Customer > haveNotBeenAcceptedCustomers = currentSolution.getHaveNotBeenAcceptedCustomers();
+        int totalHaveNotBeenAcceptedCustomers = haveNotBeenAcceptedCustomers.size();
         double costLimit = this.nrpInstance.getCostLimit();
-        for ( Customer customer : haveNotBeenAcceptedCustomers ) {
-            if ( currentSolution.isSafeAddingACustomer( customer, costLimit ) ) {
-                currentSolution.addAnAcceptedCustomer( customer );
+        
+        int loopIndex = 0;
+        List< Integer > justAcceptedCustomers = new ArrayList<>();
+        int randomNumberToAdd;
+        while( loopIndex < 10 ) {
+            
+            randomNumberToAdd = rand.nextInt( totalHaveNotBeenAcceptedCustomers ); 
+            Customer customerToAdd = haveNotBeenAcceptedCustomers.get( randomNumberToAdd );
+            
+            if ( currentSolution.isSafeAddingACustomer( customerToAdd, costLimit ) && !justAcceptedCustomers.contains( customerToAdd.getId() )) {
+                currentSolution.addAnAcceptedCustomer( customerToAdd );
+                justAcceptedCustomers.add( customerToAdd.getId() );
+                
+                loopIndex = 0;
+                continue;
             }
+            
+            loopIndex++;
         }
-
+        
+        
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
         
+        /*
+         * Output the log
+         */
         long timeElapsed = System.nanoTime() - startTime;
-        
-//        System.out.println( "Heuristic #1 -- " + timeElapsed + " ns" );
         NRPLogger.logRandomDeletionAndFirstAdding( timeElapsed );
     }
 
@@ -227,9 +241,10 @@ public class NRP extends ProblemDomain
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
         
+        /*
+         * Output the log
+         */
         long timeElapsed = System.nanoTime() - startTime;
-//        System.out.println( "Heuristic #2 -- " + timeElapsed + " ns" );
-        
         NRPLogger.logDeleteHighestCostAddLowestCost( timeElapsed );
     }
 
@@ -291,10 +306,11 @@ public class NRP extends ProblemDomain
         }
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
-        
+
+        /*
+         * Output the log
+         */
         long timeElapsed = System.nanoTime() - startTime;
-//        System.out.println( "Heuristic #3 -- " + timeElapsed + " ns" );
-        
         NRPLogger.logDeleteLowestProfitAddHighestProfit( timeElapsed );
     }
 
@@ -361,10 +377,11 @@ public class NRP extends ProblemDomain
         }
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
-        
+
+        /*
+         * Output the log
+         */
         long timeElapsed = System.nanoTime() - startTime;
-//        System.out.println( "Heuristic #4 -- " + timeElapsed + " ns" );
-        
         NRPLogger.logDeleteLowestProfitCostRatioAddHighestProfitCostRatio( timeElapsed );
     }
 
