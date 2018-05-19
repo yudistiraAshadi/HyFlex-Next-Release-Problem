@@ -3,7 +3,7 @@ package nrp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NRPSolution
+class NRPSolution
 {
     private List< Customer > acceptedCustomers = new ArrayList<>();
     private List< Customer > haveNotBeenAcceptedCustomers = new ArrayList<>();
@@ -17,7 +17,7 @@ public class NRPSolution
      * 
      * @param customersMap
      */
-    public NRPSolution( List< Customer > customersList )
+    protected NRPSolution( List< Customer > customersList )
     {
         /*
          * Create the haveNotBeenAcceptedCustomers list

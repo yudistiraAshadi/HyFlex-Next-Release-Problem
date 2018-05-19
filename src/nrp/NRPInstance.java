@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NRPInstance
+class NRPInstance
 {
     private List< Enhancement > enhancementsList = new ArrayList<>();
     private List< Customer > customersList = new ArrayList<>();
@@ -178,7 +178,7 @@ public class NRPInstance
     /**
      * @return the totalCost
      */
-    public double getTotalCost()
+    protected double getTotalCost()
     {
         return totalCost;
     }
@@ -186,7 +186,7 @@ public class NRPInstance
     /**
      * @return the costLimit
      */
-    public double getCostLimit()
+    protected double getCostLimit()
     {
         return costLimit;
     }

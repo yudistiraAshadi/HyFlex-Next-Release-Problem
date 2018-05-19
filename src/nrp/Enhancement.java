@@ -3,7 +3,7 @@ package nrp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Enhancement
+class Enhancement
 {
     private int id;
     private double cost;

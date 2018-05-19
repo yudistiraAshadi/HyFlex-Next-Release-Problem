@@ -3,7 +3,7 @@ package nrp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Customer
+class Customer
 {
     private int id;
     private double profit;
@@ -59,7 +59,7 @@ public class Customer
     /**
      * @return the totalRequestedEnhancements
      */
-    public int getTotalRequestedEnhancements()
+    protected int getTotalRequestedEnhancements()
     {
         return totalRequestedEnhancements;
     }
