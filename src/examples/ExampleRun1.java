@@ -26,11 +26,12 @@ public class ExampleRun1
 
         // we must load an instance within the problem domain, in this case we choose
         // instance 1
-        problem.loadInstance( 1 );
+        problem.loadInstance( 5 );
 
         // we must set the time limit for the hyper-heuristic in milliseconds, in this
         // example we set the time limit to 30 seconds
-        hyper_heuristic_object.setTimeLimit( 10000 );
+        long timeLimit = 10000;
+        hyper_heuristic_object.setTimeLimit( timeLimit );
 
         // a key step is to assign the ProblemDomain object to the HyperHeuristic
         // object.
@@ -42,11 +43,13 @@ public class ExampleRun1
         // called.
         // this method starts the timer, and then calls the solve() method of the
         // hyper_heuristic_object.
+        NRPLogger.logStart( "ExampleHyperHeuristic1", timeLimit );
         hyper_heuristic_object.run();
 
         // obtain the best solution found within the time limit
-        System.out.println( "The best solution value: " + hyper_heuristic_object.getBestSolutionValue() );
-        
-        NRPLogger.logFinish();
+        double bestSolutionValue = 1.0 / hyper_heuristic_object.getBestSolutionValue();
+        System.out.println( "The best solution value: " + bestSolutionValue );
+
+        NRPLogger.logFinish( bestSolutionValue );
     }
 }

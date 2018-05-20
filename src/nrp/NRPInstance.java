@@ -16,6 +16,7 @@ class NRPInstance
     private int numberOfEnhancements;
     private int numberOfCustomers;
 
+    private int instanceId;
     private double totalCost;
     private double costLimit;
     private double costLimitRatio = 0.7;
@@ -26,6 +27,7 @@ class NRPInstance
         /*
          * read the instance file
          */
+        this.instanceId = instanceId;
         initializeTheInstance( instanceId );
 
         /*
@@ -120,8 +122,6 @@ class NRPInstance
                         numberOfRequests );
                 this.customersList.add( customer );
             }
-            
-            System.out.println( "numberOfCustomers: " + numberOfCustomers );
 
         } catch ( IOException e ) {
             e.printStackTrace();
@@ -173,6 +173,14 @@ class NRPInstance
         List< Customer > copyOfCustomersList = new ArrayList<>( this.customersList );
 
         return copyOfCustomersList;
+    }
+    
+    /**
+     * @return the instanceId
+     */
+    protected int getInstanceId()
+    {
+        return instanceId;
     }
 
     /**

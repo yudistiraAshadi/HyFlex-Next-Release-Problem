@@ -44,7 +44,7 @@ public class ExampleRun {
 				                                               resultFileName, selectionType, acceptanceType);
 
 		//we must load an instance within the problem domain, in this case we choose instance 2
-		problem.loadInstance(1);
+		problem.loadInstance(5);
 		
 		//we must set the time limit for the hyper-heuristic in milliseconds
 		hyper_heuristic_object.setTimeLimit(totalExecutionTime);
@@ -55,11 +55,13 @@ public class ExampleRun {
 
 		//now that all of the parameters have been loaded, the run method can be called.
 		//this method starts the timer, and then calls the solve() method of the hyper_heuristic_object.
+		NRPLogger.logStart( "GIHH", totalExecutionTime );
 		hyper_heuristic_object.run();
 
 		//obtain the best solution found within the time limit
-		System.out.println("\n\n BEST SLN FOUND: "+hyper_heuristic_object.getBestSolutionValue());
+		double bestSolutionValue = 1.0 / hyper_heuristic_object.getBestSolutionValue();
+		System.out.println("\n\n BEST SLN FOUND: "+bestSolutionValue);
 		
-		NRPLogger.logFinish();
+		NRPLogger.logFinish( bestSolutionValue );
 	}
 }

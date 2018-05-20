@@ -1,12 +1,13 @@
 package nrp.logger;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -20,11 +21,10 @@ public class NRPLogger
     private final static Logger LOGGER = Logger.getLogger( NRPLogger.class.getName() );
     private final static Path logFilePath = Paths.get( "nrp.log" );
 
-    private static int applyHeuristicCounter = 0;
-    private static int randomDeletionAndFirstAddingCounter = 0;
-    private static int deleteHighestCostAddLowestCostCounter = 0;
-    private static int deleteLowestProfitAddHighestProfitCounter = 0;
-    private static int deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter = 0;
+    private static long startTime = 0;
+
+    private static List< BestSolutionFoundLog > bestSolutionFoundLogList = new ArrayList<>();
+    private static List< HeuristicLog > heuristicLogList = new ArrayList<>();
 
     public static void init()
     {
@@ -69,196 +69,96 @@ public class NRPLogger
         }
     }
 
-    public static void logApplyHeuristic()
+    public static void logStart( String hyperHeuristicName, long timeLimit )
     {
-        applyHeuristicCounter += 1;
-        // LOGGER.info( "applyHeuristic calls number #" + applyHeuristicCounter );
+        startTime = System.nanoTime();
+
+        System.out.println(
+                "Started: Hyper-heuristic [ " + hyperHeuristicName + " ], time limit [ " + timeLimit + " ms ]" );
+        LOGGER.info( "Hyper-heuristic [ " + hyperHeuristicName + " ], time limit [ " + timeLimit + " ms ]" );
     }
 
-    public static void logRandomDeletionAndFirstAdding( long timeElapsed )
+    public static void logInitialise( int instanceId, double costLimit )
     {
-        randomDeletionAndFirstAddingCounter += 1;
-        LOGGER.info( "Heuristic #1 - " + timeElapsed + " ns" );
+        LOGGER.info( "Initialize first solution - Instance ID: " + instanceId + ", Cost limit: " + costLimit );
     }
 
-    public static void logDeleteHighestCostAddLowestCost( long timeElapsed )
+    public static void logApplyHeuristic( int heuristicNumber )
     {
-        deleteHighestCostAddLowestCostCounter += 1;
-        LOGGER.info( "Heuristic #2 - " + timeElapsed + " ns" );
+        long currentTime = System.nanoTime();
+        HeuristicLog heuristicLog = new HeuristicLog( currentTime, heuristicNumber );
+
+        heuristicLogList.add( heuristicLog );
     }
 
-    public static void logDeleteLowestProfitAddHighestProfit( long timeElapsed )
+    public static void bestSolutionValue( int heuristicNumber, double solutionValue )
     {
-        deleteLowestProfitAddHighestProfitCounter += 1;
-        LOGGER.info( "Heuristic #3 - " + timeElapsed + " ns" );
+        long currentTime = System.nanoTime();
+        long timeElapsed = currentTime - startTime;
+        BestSolutionFoundLog bestSolution
+                = new BestSolutionFoundLog( currentTime, heuristicNumber, solutionValue );
+
+        long minute = TimeUnit.NANOSECONDS.toMinutes( timeElapsed );
+        long second = TimeUnit.NANOSECONDS.toSeconds( timeElapsed - ( minute * 60 * ( 10 ^ 9 ) ) );
+//        long second = TimeUnit.NANOSECONDS.toSeconds( timeElapsed );
+        long millis = TimeUnit.NANOSECONDS
+                .toMillis( timeElapsed - ( minute * 60 * ( 10 ^ 9 ) ) - ( second * ( 10 ^ 9 ) ) );
+
+        String time = String.format( "[%02d min : %02d.%d sec]", minute, second, millis );
+//                String time = String.format( "[%02d min : %02d sec]", minute, second );
+
+        LOGGER.info( "Time elapsed: " + time + " - Best sln value: " + solutionValue
+                + " - Heuristic #" + heuristicNumber );
+
+        bestSolutionFoundLogList.add( bestSolution );
     }
 
-    public static void logDeleteLowestProfitCostRatioAddHighestProfitCostRatio( long timeElapsed )
+    public static void logFinish( double bestSolutionValue )
     {
-        deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter += 1;
-        LOGGER.info( "Heuristic #4 - " + timeElapsed + " ns" );
-    }
+        int applyHeuristicCounter = 0;
+        int randomDeletionAndFirstAddingCounter = 0;
+        int deleteHighestCostAddLowestCostCounter = 0;
+        int deleteLowestProfitAddHighestProfitCounter = 0;
+        int deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter = 0;
 
-    public static void logFinish()
-    {
-        long totalTimeHeuristicOne = 0;
-        long minimumTimeHeuristicOne = Long.MAX_VALUE;
-        long maximumTimeHeuristicOne = 0;
+        for ( HeuristicLog heuristicLog : heuristicLogList ) {
 
-        long totalTimeHeuristicTwo = 0;
-        long minimumTimeHeuristicTwo = Long.MAX_VALUE;
-        long maximumTimeHeuristicTwo = 0;
+            applyHeuristicCounter += 1;
 
-        long totalTimeHeuristicThree = 0;
-        long minimumTimeHeuristicThree = Long.MAX_VALUE;
-        long maximumTimeHeuristicThree = 0;
-
-        long totalTimeHeuristicFour = 0;
-        long minimumTimeHeuristicFour = Long.MAX_VALUE;
-        long maximumTimeHeuristicFour = 0;
-
-        try ( BufferedReader br = Files.newBufferedReader( logFilePath ) ) {
-
-            String lineOfLog;
-            while ( ( lineOfLog = br.readLine() ) != null ) {
-
-                // Split the line of log
-                String[] theLogs = lineOfLog.split( "\\s-\\s" );
-
-                // Check which heuristic
-                String[] heuristic = theLogs[ 2 ].split( "#" );
-                int heuristicNumber = Integer.parseInt( heuristic[ 1 ] );
-
-                // Check the time
-                String[] theTime = theLogs[ 3 ].split( "\\s+" );
-                long theTimeNumber = Long.parseLong( theTime[ 0 ] );
-
-                // Add it to total time and check whether it is the minimum or the maximum time
-                switch ( heuristicNumber ) {
-                    case 1:
-                        totalTimeHeuristicOne += theTimeNumber;
-
-                        if ( theTimeNumber < minimumTimeHeuristicOne ) {
-                            minimumTimeHeuristicOne = theTimeNumber;
-                            break;
-                        }
-
-                        if ( theTimeNumber > maximumTimeHeuristicOne ) {
-                            maximumTimeHeuristicOne = theTimeNumber;
-                            break;
-                        }
-                        break;
-                    case 2:
-                        totalTimeHeuristicTwo += theTimeNumber;
-
-                        if ( theTimeNumber < minimumTimeHeuristicTwo ) {
-                            minimumTimeHeuristicTwo = theTimeNumber;
-                            break;
-                        }
-
-                        if ( theTimeNumber > maximumTimeHeuristicTwo ) {
-                            maximumTimeHeuristicTwo = theTimeNumber;
-                            break;
-                        }
-                        break;
-                    case 3:
-                        totalTimeHeuristicThree += theTimeNumber;
-
-                        if ( theTimeNumber < minimumTimeHeuristicThree ) {
-                            minimumTimeHeuristicThree = theTimeNumber;
-                            break;
-                        }
-
-                        if ( theTimeNumber > maximumTimeHeuristicThree ) {
-                            maximumTimeHeuristicThree = theTimeNumber;
-                            break;
-                        }
-                        break;
-                    case 4:
-                        totalTimeHeuristicFour += theTimeNumber;
-
-                        if ( theTimeNumber < minimumTimeHeuristicFour ) {
-                            minimumTimeHeuristicFour = theTimeNumber;
-                            break;
-                        }
-
-                        if ( theTimeNumber > maximumTimeHeuristicFour ) {
-                            maximumTimeHeuristicFour = theTimeNumber;
-                            break;
-                        }
-                        break;
-                    default:
-                        System.err.println( "heuristic does not exist" );
-                        System.exit( -1 );
-                }
+            switch ( heuristicLog.getHeuristicNumber() ) {
+                case 0:
+                    randomDeletionAndFirstAddingCounter += 1;
+                    break;
+                case 1:
+                    deleteHighestCostAddLowestCostCounter += 1;
+                    break;
+                case 2:
+                    deleteLowestProfitAddHighestProfitCounter += 1;
+                    break;
+                case 3:
+                    deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter += 1;
+                    break;
+                default:
+                    System.err.println( "heuristic does not exist" );
+                    System.exit( -1 );
             }
-
-        } catch ( IOException e ) {
-            e.printStackTrace();
         }
-        
+
+        LOGGER.info( "Best solution value: " + bestSolutionValue );
+        LOGGER.info( "Total heuristic called: " + applyHeuristicCounter + " times" );
+
         // Heuristic one
-        LOGGER.info( "Heuristic #1 - Called: " + randomDeletionAndFirstAddingCounter + " times, Average time: "
-                + totalTimeHeuristicOne / randomDeletionAndFirstAddingCounter
-                + " ns, Minimum time: " + minimumTimeHeuristicOne + " ns, Maximum time: "
-                + maximumTimeHeuristicOne + " ns" );
+        LOGGER.info( "Heuristic #1 - Called: " + randomDeletionAndFirstAddingCounter + " times" );
 
         // Heuristic two
-        LOGGER.info( "Heuristic #2 - Called: " + deleteHighestCostAddLowestCostCounter + " times, Average time: "
-                + totalTimeHeuristicTwo / deleteHighestCostAddLowestCostCounter
-                + " ns, Minimum time: " + minimumTimeHeuristicTwo + " ns, Maximum time: "
-                + maximumTimeHeuristicTwo + " ns" );
+        LOGGER.info( "Heuristic #2 - Called: " + deleteHighestCostAddLowestCostCounter + " times" );
 
         // Heuristic three
-        LOGGER.info( "Heuristic #3 - Called: " + deleteLowestProfitAddHighestProfitCounter + " times, Average time: "
-                + totalTimeHeuristicThree / deleteLowestProfitAddHighestProfitCounter
-                + " ns, Minimum time: " + minimumTimeHeuristicThree + " ns, Maximum time: "
-                + maximumTimeHeuristicThree + " ns" );
+        LOGGER.info(
+                "Heuristic #3 - Called: " + deleteLowestProfitAddHighestProfitCounter + " times" );
 
         // Heuristic four
-        LOGGER.info( "Heuristic #4 - Called: " + deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter + " times, Average time: "
-                + totalTimeHeuristicFour / deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter
-                + " ns, Minimum time: " + minimumTimeHeuristicFour + " ns, Maximum time: "
-                + maximumTimeHeuristicFour + " ns" );
-    }
-
-    /**
-     * @return the applyHeuristicCounter
-     */
-    protected static int getApplyHeuristicCounter()
-    {
-        return applyHeuristicCounter;
-    }
-
-    /**
-     * @return the randomDeletionAndFirstAddingCounter
-     */
-    protected static int getRandomDeletionAndFirstAddingCounter()
-    {
-        return randomDeletionAndFirstAddingCounter;
-    }
-
-    /**
-     * @return the deleteHighestCostAddLowestCostCounter
-     */
-    protected static int getDeleteHighestCostAddLowestCostCounter()
-    {
-        return deleteHighestCostAddLowestCostCounter;
-    }
-
-    /**
-     * @return the deleteLowestProfitAddHighestProfitCounter
-     */
-    protected static int getDeleteLowestProfitAddHighestProfitCounter()
-    {
-        return deleteLowestProfitAddHighestProfitCounter;
-    }
-
-    /**
-     * @return the deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter
-     */
-    protected static int getDeleteLowestProfitCostRatioAddHighestProfitCostRatioCounter()
-    {
-        return deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter;
+        LOGGER.info( "Heuristic #4 - Called: "
+                + deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter + " times" );
     }
 }

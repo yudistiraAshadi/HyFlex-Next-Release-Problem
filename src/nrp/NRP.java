@@ -21,6 +21,10 @@ public class NRP extends ProblemDomain
     public NRP( long seed )
     {
         super( seed );
+
+        /*
+         * Initialise NRPLogger
+         */
         NRPLogger.init();
     }
 
@@ -57,9 +61,20 @@ public class NRP extends ProblemDomain
                         + ( System.currentTimeMillis() - startTime ) );
 
         /*
-         * Verify best solution or not
+         * Log the heuristic
          */
-        this.verifyBestSolution( this.nrpSolutions[ solutionDestinationIndex ] );
+        NRPLogger.logApplyHeuristic( heuristicID );
+
+        /*
+         * Verify whether current solution is best solution or not
+         */
+        NRPSolution currentSolution = this.nrpSolutions[ solutionDestinationIndex ];
+        if ( this.isBestSolution( currentSolution ) ) {
+
+            this.bestSolution = new NRPSolution( currentSolution );
+
+            NRPLogger.bestSolutionValue( heuristicID, this.bestSolution.getTotalProfit() );
+        }
 
         return this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
     }
@@ -97,9 +112,20 @@ public class NRP extends ProblemDomain
                         + ( System.currentTimeMillis() - startTime ) );
 
         /*
-         * Verify best solution or not
+         * Log the heuristic
          */
-        this.verifyBestSolution( this.nrpSolutions[ solutionDestinationIndex ] );
+        NRPLogger.logApplyHeuristic( heuristicID );
+
+        /*
+         * Verify whether current solution is best solution or not
+         */
+        NRPSolution currentSolution = this.nrpSolutions[ solutionDestinationIndex ];
+        if ( this.isBestSolution( currentSolution ) ) {
+
+            this.bestSolution = new NRPSolution( currentSolution );
+
+            NRPLogger.bestSolutionValue( heuristicID, this.bestSolution.getTotalProfit() );
+        }
 
         return this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
     }
@@ -109,13 +135,12 @@ public class NRP extends ProblemDomain
      * 
      * @param currentSolution
      */
-    private void verifyBestSolution( NRPSolution currentSolution )
+    private boolean isBestSolution( NRPSolution currentSolution )
     {
         if ( currentSolution.getTotalProfit() > this.bestSolution.getTotalProfit() ) {
-            this.bestSolution = new NRPSolution( currentSolution );
-            
-            System.out.println(
-                    this.getBestSolutionValue() + " -- " + currentSolution.getTotalProfit() );
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -125,8 +150,6 @@ public class NRP extends ProblemDomain
      */
     private void randomDeletionAndFirstAdding( int sourceIndex, int targetIndex )
     {
-        long startTime = System.nanoTime();
-        
         /*
          * Get currentSolution and customersList
          */
@@ -145,41 +168,36 @@ public class NRP extends ProblemDomain
          */
         Customer removedCustomer = acceptedCustomers.get( randomNumberToRmove );
         currentSolution.removeAnAcceptedCustomer( removedCustomer );
-        
+
         /*
          * Add random customer
          */
-        List< Customer > haveNotBeenAcceptedCustomers = currentSolution.getHaveNotBeenAcceptedCustomers();
+        List< Customer > haveNotBeenAcceptedCustomers
+                = currentSolution.getHaveNotBeenAcceptedCustomers();
         int totalHaveNotBeenAcceptedCustomers = haveNotBeenAcceptedCustomers.size();
         double costLimit = this.nrpInstance.getCostLimit();
-        
+
         int loopIndex = 0;
         List< Integer > justAcceptedCustomers = new ArrayList<>();
         int randomNumberToAdd;
-        while( loopIndex < 10 ) {
-            
-            randomNumberToAdd = rand.nextInt( totalHaveNotBeenAcceptedCustomers ); 
+        while ( loopIndex < 10 ) {
+
+            randomNumberToAdd = rand.nextInt( totalHaveNotBeenAcceptedCustomers );
             Customer customerToAdd = haveNotBeenAcceptedCustomers.get( randomNumberToAdd );
-            
-            if ( currentSolution.isSafeAddingACustomer( customerToAdd, costLimit ) && !justAcceptedCustomers.contains( customerToAdd.getId() )) {
+
+            if ( currentSolution.isSafeAddingACustomer( customerToAdd, costLimit )
+                    && !justAcceptedCustomers.contains( customerToAdd.getId() ) ) {
                 currentSolution.addAnAcceptedCustomer( customerToAdd );
                 justAcceptedCustomers.add( customerToAdd.getId() );
-                
+
                 loopIndex = 0;
                 continue;
             }
-            
+
             loopIndex++;
         }
-        
-        
+
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
-        
-        /*
-         * Output the log
-         */
-        long timeElapsed = System.nanoTime() - startTime;
-        NRPLogger.logRandomDeletionAndFirstAdding( timeElapsed );
     }
 
     /**
@@ -188,8 +206,6 @@ public class NRP extends ProblemDomain
      */
     private void deleteHighestCostAddLowestCost( int sourceIndex, int targetIndex )
     {
-        long startTime = System.nanoTime();
-        
         /*
          * Get currentSolution and customersList
          */
@@ -240,12 +256,6 @@ public class NRP extends ProblemDomain
         }
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
-        
-        /*
-         * Output the log
-         */
-        long timeElapsed = System.nanoTime() - startTime;
-        NRPLogger.logDeleteHighestCostAddLowestCost( timeElapsed );
     }
 
     /**
@@ -254,8 +264,6 @@ public class NRP extends ProblemDomain
      */
     private void deleteLowestProfitAddHighestProfit( int sourceIndex, int targetIndex )
     {
-        long startTime = System.nanoTime();
-        
         /*
          * Get currentSolution and customersList
          */
@@ -306,12 +314,6 @@ public class NRP extends ProblemDomain
         }
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
-
-        /*
-         * Output the log
-         */
-        long timeElapsed = System.nanoTime() - startTime;
-        NRPLogger.logDeleteLowestProfitAddHighestProfit( timeElapsed );
     }
 
     /**
@@ -321,8 +323,6 @@ public class NRP extends ProblemDomain
     private void deleteLowestProfitCostRatioAddHighestProfitCostRatio( int sourceIndex,
             int targetIndex )
     {
-        long startTime = System.nanoTime();
-        
         /*
          * Get currentSolution and customersList
          */
@@ -377,12 +377,6 @@ public class NRP extends ProblemDomain
         }
 
         this.nrpSolutions[ targetIndex ] = new NRPSolution( currentSolution );
-
-        /*
-         * Output the log
-         */
-        long timeElapsed = System.nanoTime() - startTime;
-        NRPLogger.logDeleteLowestProfitCostRatioAddHighestProfitCostRatio( timeElapsed );
     }
 
     @Override
@@ -471,8 +465,14 @@ public class NRP extends ProblemDomain
     public void initialiseSolution( int solutionIndex )
     {
         NRPSolution initialSolution = new NRPSolution( this.nrpInstance.getCustomersList() );
+
+        int instanceId = this.nrpInstance.getInstanceId();
         double costLimit = this.nrpInstance.getCostLimit();
-        System.out.println( "Cost Limit: " + costLimit );
+
+        /*
+         * Log the initialiseSolution function
+         */
+        NRPLogger.logInitialise( instanceId, costLimit );
 
         List< Customer > haveNotBeenAcceptedCustomers
                 = initialSolution.getHaveNotBeenAcceptedCustomers();
