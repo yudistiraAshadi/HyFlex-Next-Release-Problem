@@ -16,7 +16,7 @@ public class NRP extends ProblemDomain
 {
     private NRPInstance nrpInstance;
     private NRPSolution[] nrpSolutions = new NRPSolution[ 2 ];
-    private NRPSolution bestSolution;
+    private NRPSolution bestSolution = new NRPSolution();
 
     public NRP( long seed )
     {
@@ -492,7 +492,14 @@ public class NRP extends ProblemDomain
         }
 
         this.nrpSolutions[ solutionIndex ] = new NRPSolution( initialSolution );
-        this.bestSolution = new NRPSolution( initialSolution );
+        
+        /*
+         * Verify whether current solution is best solution or not
+         */
+        NRPSolution currentSolution = this.nrpSolutions[ solutionIndex ];   
+        if ( this.isBestSolution( currentSolution ) ) {
+            this.bestSolution = new NRPSolution( currentSolution );
+        }
     }
 
     @Override

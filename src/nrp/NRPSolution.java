@@ -10,9 +10,17 @@ class NRPSolution
     private List< Enhancement > acceptedEnhancements = new ArrayList<>();
 
     private double totalCost;
-    private double totalProfit;
+    private double totalProfit = 0;
 
     /**
+     * Empty constructor
+     */
+	public NRPSolution()
+	{
+		
+	}
+
+	/**
      * Basic Constructor
      * 
      * @param customersMap
