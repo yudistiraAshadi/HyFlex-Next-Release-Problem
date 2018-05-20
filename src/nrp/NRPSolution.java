@@ -10,14 +10,14 @@ class NRPSolution
     private List< Enhancement > acceptedEnhancements = new ArrayList<>();
 
     private double totalCost;
-    private double totalProfit = 0;
+    private double totalProfit;
 
     /**
      * Empty constructor
      */
 	public NRPSolution()
 	{
-		
+		this.totalProfit = 0;
 	}
 
 	/**

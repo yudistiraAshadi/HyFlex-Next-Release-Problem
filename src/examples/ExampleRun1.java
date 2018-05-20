@@ -16,6 +16,9 @@ public class ExampleRun1
 
     public static void main( String[] args )
     {
+    	int instanceId = 5;
+        long timeLimit = 10000;
+        String hyperHeuristicName = "ExampleHyperHeuristic1";
 
         // create a ProblemDomain object with a seed for the random number generator
         ProblemDomain problem = new NRP( 1234 );
@@ -26,11 +29,10 @@ public class ExampleRun1
 
         // we must load an instance within the problem domain, in this case we choose
         // instance 1
-        problem.loadInstance( 5 );
+        problem.loadInstance( instanceId );
 
         // we must set the time limit for the hyper-heuristic in milliseconds, in this
         // example we set the time limit to 30 seconds
-        long timeLimit = 10000;
         hyper_heuristic_object.setTimeLimit( timeLimit );
 
         // a key step is to assign the ProblemDomain object to the HyperHeuristic
@@ -43,7 +45,7 @@ public class ExampleRun1
         // called.
         // this method starts the timer, and then calls the solve() method of the
         // hyper_heuristic_object.
-        NRPLogger.logStart( "ExampleHyperHeuristic1", timeLimit );
+        NRPLogger.logStart( hyperHeuristicName, instanceId, timeLimit );
         hyper_heuristic_object.run();
 
         // obtain the best solution found within the time limit

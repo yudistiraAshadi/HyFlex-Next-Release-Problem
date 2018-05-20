@@ -26,6 +26,8 @@ public class ExampleRun {
 		
 		long seed = 1234;
 		long totalExecutionTime = 10000;
+		int instanceId = 5;
+		String hyperHeuristicName = "GIHH";
 		
 		SelectionMethodType selectionType = SelectionMethodType.AdaptiveLimitedLAassistedDHSMentorSTD;
 		AcceptanceCriterionType acceptanceType = AcceptanceCriterionType.AdaptiveIterationLimitedListBasedTA;
@@ -55,7 +57,7 @@ public class ExampleRun {
 
 		//now that all of the parameters have been loaded, the run method can be called.
 		//this method starts the timer, and then calls the solve() method of the hyper_heuristic_object.
-		NRPLogger.logStart( "GIHH", totalExecutionTime );
+        NRPLogger.logStart( hyperHeuristicName, instanceId, totalExecutionTime );
 		hyper_heuristic_object.run();
 
 		//obtain the best solution found within the time limit

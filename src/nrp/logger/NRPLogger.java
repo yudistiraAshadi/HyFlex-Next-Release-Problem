@@ -26,6 +26,9 @@ public class NRPLogger
     private static List< BestSolutionFoundLog > bestSolutionFoundLogList = new ArrayList<>();
     private static List< HeuristicLog > heuristicLogList = new ArrayList<>();
 
+    /**
+     * Initialize the logger file
+     */
     public static void init()
     {
         Handler fileHandler = null;
@@ -69,20 +72,38 @@ public class NRPLogger
         }
     }
 
-    public static void logStart( String hyperHeuristicName, long timeLimit )
+    /**
+     * Function to log at the beginning, should be called before HyperHeuristic.run()
+     * 
+     * @param hyperHeuristicName
+     * @param timeLimit
+     */
+    public static void logStart( String hyperHeuristicName, int instanceId, long timeLimit )
     {
         startTime = System.nanoTime();
 
         System.out.println(
-                "Started: Hyper-heuristic [ " + hyperHeuristicName + " ], time limit [ " + timeLimit + " ms ]" );
-        LOGGER.info( "Hyper-heuristic [ " + hyperHeuristicName + " ], time limit [ " + timeLimit + " ms ]" );
+                "Started: Hyper-heuristic [ " + hyperHeuristicName + " ], instanceId [ " + instanceId + " ], time limit [ " + timeLimit + " ms ]" );
+        LOGGER.info( "Hyper-heuristic [ " + hyperHeuristicName + " ], instanceId [ " + instanceId + " ], time limit [ " + timeLimit + " ms ]" );
     }
 
+    /**
+     * Function to log on ProblemDomain.initialiseSolution() call
+     * 
+     * @param instanceId
+     * @param costLimit
+     */
     public static void logInitialise( int instanceId, double costLimit )
     {
         LOGGER.info( "Initialize first solution - Instance ID: " + instanceId + ", Cost limit: " + costLimit );
     }
 
+    
+    /**
+     * Function to log on ProblemDomain.applyHeuristic() call
+     * 
+     * @param heuristicNumber
+     */
     public static void logApplyHeuristic( int heuristicNumber )
     {
         long currentTime = System.nanoTime();
@@ -91,6 +112,13 @@ public class NRPLogger
         heuristicLogList.add( heuristicLog );
     }
 
+    
+    /**
+     * Function to log when the best solution is found
+     * 
+     * @param heuristicNumber
+     * @param solutionValue
+     */
     public static void bestSolutionValue( int heuristicNumber, double solutionValue )
     {
         long currentTime = System.nanoTime();
@@ -100,12 +128,10 @@ public class NRPLogger
 
         long minute = TimeUnit.NANOSECONDS.toMinutes( timeElapsed );
         long second = TimeUnit.NANOSECONDS.toSeconds( timeElapsed - ( minute * 60 * ( 10 ^ 9 ) ) );
-//        long second = TimeUnit.NANOSECONDS.toSeconds( timeElapsed );
         long millis = TimeUnit.NANOSECONDS
                 .toMillis( timeElapsed - ( minute * 60 * ( 10 ^ 9 ) ) - ( second * ( 10 ^ 9 ) ) );
 
         String time = String.format( "[%02d min : %02d.%d sec]", minute, second, millis );
-//                String time = String.format( "[%02d min : %02d sec]", minute, second );
 
         LOGGER.info( "Time elapsed: " + time + " - Best sln value: " + solutionValue
                 + " - Heuristic #" + heuristicNumber );
