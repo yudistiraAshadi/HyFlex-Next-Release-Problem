@@ -2,7 +2,7 @@
     Adapted from ExampleRun1.java (chesc.jar @ http://www.asap.cs.nott.ac.uk/external/chesc2011/hyflex_download.html)
 */
 
-package hyperheuristic.run;
+package hyperheuristic;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;

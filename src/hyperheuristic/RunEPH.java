@@ -1,39 +1,31 @@
-package hyperheuristic.run;
+package hyperheuristic;
 
 import AbstractClasses.HyperHeuristic;
 import AbstractClasses.ProblemDomain;
-import hyperheuristic.ExampleHyperHeuristic1;
+import davidChescEPH.DavidChescEPH;
 import nrp.NRP;
 import nrp.logger.NRPLogger;
 
-/**
- * This class shows how to run a selected hyper-heuristic on a selected problem
- * domain. It shows the minimum that must be done to test a hyper heuristic on a
- * problem domain, and it is intended to be read before the ExampleRun2 class,
- * which provides an example of a more complex set-up
- */
-public class ExampleRun1
+public class RunEPH
 {
-
     public static void main( String[] args )
     {
+        long seed = 1234;
         int instanceId = 5;
         long timeLimit = 10000;
-        String hyperHeuristicName = "ExampleHyperHeuristic1";
+        String hyperHeuristicName = "DavidChescEPH";
 
         // create a ProblemDomain object with a seed for the random number generator
-        ProblemDomain problem = new NRP( 1234 );
+        ProblemDomain problem = new NRP( seed );
 
-        // creates an ExampleHyperHeuristic object with a seed for the random number
+        // creates an EPH object with a seed for the random number
         // generator
-        HyperHeuristic hyper_heuristic_object = new ExampleHyperHeuristic1( 5678 );
+        HyperHeuristic hyper_heuristic_object = new DavidChescEPH( seed );
 
-        // we must load an instance within the problem domain, in this case we choose
-        // instance 1
+        // we must load an instance within the problem domain
         problem.loadInstance( instanceId );
 
-        // we must set the time limit for the hyper-heuristic in milliseconds, in this
-        // example we set the time limit to 30 seconds
+        // we must set the time limit for the hyper-heuristic in milliseconds
         hyper_heuristic_object.setTimeLimit( timeLimit );
 
         // a key step is to assign the ProblemDomain object to the HyperHeuristic

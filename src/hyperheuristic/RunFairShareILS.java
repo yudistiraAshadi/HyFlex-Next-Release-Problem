@@ -1,4 +1,4 @@
-package hyperheuristic.run;
+package hyperheuristic;
 
 /*
  * author: Steven Adriaensen
@@ -9,11 +9,11 @@ package hyperheuristic.run;
 
 import java.util.Date;
 
-import hyperheuristic.FairShareILS;
 import nrp.NRP;
 import nrp.logger.NRPLogger;
 import AbstractClasses.HyperHeuristic;
 import AbstractClasses.ProblemDomain;
+import fsils.FairShareILS;
 
 
 public class RunFairShareILS {
