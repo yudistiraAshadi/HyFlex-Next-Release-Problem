@@ -2,7 +2,7 @@
     Adapted from ExampleRun1.java (chesc.jar @ http://www.asap.cs.nott.ac.uk/external/chesc2011/hyflex_download.html)
 */
 
-package examples;
+package hyperheuristic.run;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -20,7 +20,7 @@ import AbstractClasses.ProblemDomain;
 /**
  * This class show hows to run GIHH
  */
-public class ExampleRun {	
+public class RunGIHH {	
 	
 	public static void main(String[] args) {
 		

@@ -1,4 +1,4 @@
-package examples;
+package hyperheuristic;
 
 import AbstractClasses.HyperHeuristic;
 import AbstractClasses.ProblemDomain;
