@@ -1,27 +1,25 @@
 package nrp.util;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.io.Writer;
 import java.util.List;
 
 public class CSVUtils
 {
     private static final char DEFAULT_SEPARATOR = ',';
 
-    public static void writeLine( Path path, List< String > values ) throws IOException
+    public static void writeLine( Writer w, List< String > values ) throws IOException
     {
-        writeLine( path, values, DEFAULT_SEPARATOR, ' ' );
+        writeLine( w, values, DEFAULT_SEPARATOR, ' ' );
     }
 
-    public static void writeLine( Path path, List< String > values, char separators )
+    public static void writeLine( Writer w, List< String > values, char separators )
             throws IOException
     {
-        writeLine( path, values, separators, ' ' );
+        writeLine( w, values, separators, ' ' );
     }
 
-    public static void writeLine( Path path, List< String > values, char separators,
+    public static void writeLine( Writer w, List< String > values, char separators,
             char customQuote ) throws IOException
     {
         boolean first = true;
@@ -48,7 +46,8 @@ public class CSVUtils
         }
 
         sb.append( "\n" );
-        Files.write( path, sb.toString().getBytes(), StandardOpenOption.APPEND );
+        w.append( sb.toString() );
+        // Files.write( path, sb.toString().getBytes(), StandardOpenOption.APPEND );
     }
 
     // https://tools.ietf.org/html/rfc4180

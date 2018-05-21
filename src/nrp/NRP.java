@@ -73,7 +73,7 @@ public class NRP extends ProblemDomain
 
             this.bestSolution = new NRPSolution( currentSolution );
 
-            NRPLogger.bestSolutionValue( heuristicID, this.bestSolution.getTotalProfit() );
+            NRPLogger.logBestSolutionFound( heuristicID, this.bestSolution.getTotalProfit() );
         }
 
         return this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
@@ -124,7 +124,7 @@ public class NRP extends ProblemDomain
 
             this.bestSolution = new NRPSolution( currentSolution );
 
-            NRPLogger.bestSolutionValue( heuristicID, this.bestSolution.getTotalProfit() );
+            NRPLogger.logBestSolutionFound( heuristicID, this.bestSolution.getTotalProfit() );
         }
 
         return this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();

@@ -16,7 +16,7 @@ public class ExampleRun1
 
     public static void main( String[] args )
     {
-        int instanceId = 5;
+        int instanceId = 1;
         long timeLimit = 10000;
         String hyperHeuristicName = "ExampleHyperHeuristic1";
 

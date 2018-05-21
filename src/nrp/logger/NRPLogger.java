@@ -1,11 +1,13 @@
 package nrp.logger;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -23,13 +25,25 @@ import nrp.util.CSVUtils;
 
 public class NRPLogger
 {
+    /*
+     * Logger
+     */
     private final static Logger LOGGER = Logger.getLogger( NRPLogger.class.getName() );
-
     private final static Path logFilePath = Paths.get( "nrp.log" );
-    private final static Path csvDirectory = Paths.get( "csv" );
-    private final static Path csvFilePath = Paths.get( "csv/test.csv" );
 
+    /*
+     * Results directory and filenames
+     */
+    private final static Path nrpResultsParentDirectory = Paths.get( "nrp-results" );
+    private final static String heuristicLogsFilename = "heuristicLogs.csv";
+    private final static String bestSolutionFoundFilename = "bestSolutionFound.csv";
+
+    /*
+     * Basic information
+     */
     private static long startTime = 0;
+    private static String hyperHeuristicName;
+    private static int instanceId;
 
     private static List< BestSolutionFoundLog > bestSolutionFoundLogList = new ArrayList<>();
     private static List< HeuristicLog > heuristicLogList = new ArrayList<>();
@@ -90,6 +104,8 @@ public class NRPLogger
     public static void logStart( String hyperHeuristicName, int instanceId, long timeLimit )
     {
         startTime = System.nanoTime();
+        NRPLogger.hyperHeuristicName = hyperHeuristicName;
+        NRPLogger.instanceId = instanceId;
 
         System.out.println( "Started: Hyper-heuristic [ " + hyperHeuristicName + " ], instanceId [ "
                 + instanceId + " ], time limit [ " + timeLimit + " ms ]" );
@@ -130,14 +146,13 @@ public class NRPLogger
      * @param heuristicNumber
      * @param solutionValue
      */
-    public static void bestSolutionValue( int heuristicNumber, double solutionValue )
+    public static void logBestSolutionFound( int heuristicNumber, double solutionValue )
     {
-        long currentTime = System.nanoTime();
-        long timeElapsed = currentTime - startTime;
+        long timeElapsed = System.nanoTime() - startTime;
         assert startTime != 0;
 
         BestSolutionFoundLog bestSolution
-                = new BestSolutionFoundLog( currentTime, heuristicNumber, solutionValue );
+                = new BestSolutionFoundLog( timeElapsed, heuristicNumber, solutionValue );
 
         long minute = TimeUnit.NANOSECONDS.toMinutes( timeElapsed );
         long second = TimeUnit.NANOSECONDS.toSeconds( timeElapsed - ( minute * 60 * ( 10 ^ 9 ) ) );
@@ -166,81 +181,109 @@ public class NRPLogger
         int deleteLowestProfitAddHighestProfitCounter = 0;
         int deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter = 0;
 
-        /*
-         * Initialize the CSV directory and file
-         */
-        if ( !Files.exists( csvDirectory ) ) {
-            try {
-                Files.createDirectories( csvDirectory );
-            } catch ( IOException e ) {
-                e.printStackTrace();
-                ;
-            }
-        }
-
-        if ( !Files.exists( csvFilePath ) ) {
-            try {
-                Files.createFile( csvFilePath );
-            } catch ( IOException e ) {
-                e.printStackTrace();
-                ;
-            }
-        } else {
-            try {
-                Files.write( csvFilePath, new byte[ 0 ], StandardOpenOption.TRUNCATE_EXISTING );
-            } catch ( IOException e ) {
-                e.printStackTrace();
-            }
-        }
-
-        /*
-         * Add the CSV file header
-         */
-        String[] csvFileHeader = { "heuristicNumber", "timeElapsed" };
         try {
-            CSVUtils.writeLine( csvFilePath, Arrays.asList( csvFileHeader ) );
-        } catch ( IOException e ) {
-            e.printStackTrace();
-        }
-
-        /*
-         * Calculate total called and generate CSV file
-         */
-        for ( HeuristicLog heuristicLog : heuristicLogList ) {
-
-            int heuristicNumber = heuristicLog.getHeuristicNumber();
-            long timeElapsed = heuristicLog.getTimeElapsed();
 
             /*
-             * Write to CSV
+             * Initialize the parent directory
              */
-            String[] heuristicLogString
-                    = { Integer.toString( heuristicNumber ), Long.toString( timeElapsed ) };
-            try {
-                CSVUtils.writeLine( csvFilePath, Arrays.asList( heuristicLogString ) );
-            } catch ( IOException e ) {
-                e.printStackTrace();
+            if ( !Files.exists( nrpResultsParentDirectory ) ) {
+                Files.createDirectories( nrpResultsParentDirectory );
             }
 
-            applyHeuristicCounter += 1;
+            /*
+             * Initialize new directory for current run
+             */
+            String currentDate = LocalDateTime.now()
+                    .format( DateTimeFormatter.ofPattern( "yyyy-MM-dd HH_mm_ss" ) );
+            String currentResultDirectoryName
+                    = "[" + currentDate + "]-" + hyperHeuristicName + "-instance#" + instanceId;
+            Path currentRunResultDirectory
+                    = Paths.get( nrpResultsParentDirectory.toAbsolutePath().normalize().toString(),
+                            currentResultDirectoryName );
 
-            switch ( heuristicNumber ) {
-                case 0:
-                    randomDeletionAndFirstAddingCounter += 1;
-                    break;
-                case 1:
-                    deleteHighestCostAddLowestCostCounter += 1;
-                    break;
-                case 2:
-                    deleteLowestProfitAddHighestProfitCounter += 1;
-                    break;
-                case 3:
-                    deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter += 1;
-                    break;
-                default:
-                    System.err.println( "heuristic does not exist" );
-                    System.exit( -1 );
+            Files.createDirectories( currentRunResultDirectory );
+
+            /*
+             * Initialize the output files
+             */
+            FileWriter heuristicLogsWriter = new FileWriter(
+                    currentRunResultDirectory.toAbsolutePath().normalize().toString() + "/"
+                            + heuristicLogsFilename );
+            FileWriter bestSolutionFoundWriter = new FileWriter(
+                    currentRunResultDirectory.toAbsolutePath().normalize().toString() + "/"
+                            + bestSolutionFoundFilename );
+
+            /*
+             * Add the CSV files header
+             */
+            String[] heuristicLogsHeader = { "iterationNumber", "heuristicNumber", "timeElapsed" };
+            CSVUtils.writeLine( heuristicLogsWriter, Arrays.asList( heuristicLogsHeader ) );
+
+            String[] bestSolutionFoundHeader = { "timeFound", "heuristicNumber", "solutionValue" };
+            CSVUtils.writeLine( bestSolutionFoundWriter, Arrays.asList( bestSolutionFoundHeader ) );
+
+            /*
+             * Iterate through heuristicLog and generate CSV file
+             */
+            for ( HeuristicLog heuristicLog : heuristicLogList ) {
+
+                int heuristicNumber = heuristicLog.getHeuristicNumber();
+                long timeElapsed = heuristicLog.getTimeElapsed();
+
+                applyHeuristicCounter += 1;
+
+                switch ( heuristicNumber ) {
+                    case 0:
+                        randomDeletionAndFirstAddingCounter += 1;
+                        break;
+                    case 1:
+                        deleteHighestCostAddLowestCostCounter += 1;
+                        break;
+                    case 2:
+                        deleteLowestProfitAddHighestProfitCounter += 1;
+                        break;
+                    case 3:
+                        deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter += 1;
+                        break;
+                    default:
+                        System.err.println( "heuristic does not exist" );
+                        System.exit( -1 );
+                }
+
+                /*
+                 * Write to CSV
+                 */
+                String[] heuristicLogString = { Integer.toString( applyHeuristicCounter ),
+                        Integer.toString( heuristicNumber ), Long.toString( timeElapsed ) };
+                CSVUtils.writeLine( heuristicLogsWriter, Arrays.asList( heuristicLogString ) );
             }
+
+            /*
+             * Iterate through bestSolutionFoundLogList and generate CSV file
+             */
+            for ( BestSolutionFoundLog bestSolutionFoundLog : bestSolutionFoundLogList ) {
+
+                long timeFound = bestSolutionFoundLog.getTimeFound();
+                int heuristicNumber = bestSolutionFoundLog.getHeuristicNumber();
+                double solutionValue = bestSolutionFoundLog.getSolutionValue();
+
+                /*
+                 * Write to CSV
+                 */
+                String[] bestSolutionFoundLogString = { Long.toString( timeFound ),
+                        Integer.toString( heuristicNumber ), Double.toString( solutionValue ) };
+                CSVUtils.writeLine( bestSolutionFoundWriter,
+                        Arrays.asList( bestSolutionFoundLogString ) );
+            }
+
+            heuristicLogsWriter.flush();
+            bestSolutionFoundWriter.flush();
+            
+            heuristicLogsWriter.close();
+            bestSolutionFoundWriter.close();
+
+        } catch ( IOException e ) {
+            e.printStackTrace();
         }
 
         LOGGER.info( "Best solution value: " + bestSolutionValue );
