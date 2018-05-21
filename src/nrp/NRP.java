@@ -492,11 +492,11 @@ public class NRP extends ProblemDomain
         }
 
         this.nrpSolutions[ solutionIndex ] = new NRPSolution( initialSolution );
-        
+
         /*
          * Verify whether current solution is best solution or not
          */
-        NRPSolution currentSolution = this.nrpSolutions[ solutionIndex ];   
+        NRPSolution currentSolution = this.nrpSolutions[ solutionIndex ];
         if ( this.isBestSolution( currentSolution ) ) {
             this.bestSolution = new NRPSolution( currentSolution );
         }

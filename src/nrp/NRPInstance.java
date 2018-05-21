@@ -174,7 +174,7 @@ class NRPInstance
 
         return copyOfCustomersList;
     }
-    
+
     /**
      * @return the instanceId
      */
@@ -243,13 +243,13 @@ class NRPInstance
                     List< Enhancement > dependenciesList = this
                             .getTheEnhancementsListWithItsDependencies( currentDependenciesList );
 
-                    for (Enhancement dependency : dependenciesList) {
+                    for ( Enhancement dependency : dependenciesList ) {
                         if ( !newEnhancementsList.contains( dependency ) ) {
                             newEnhancementsList.add( dependency );
                         }
                     }
                 } else {
-                    for (Enhancement dependency : currentDependenciesList) {
+                    for ( Enhancement dependency : currentDependenciesList ) {
                         if ( !newEnhancementsList.contains( dependency ) ) {
                             newEnhancementsList.add( dependency );
                         }

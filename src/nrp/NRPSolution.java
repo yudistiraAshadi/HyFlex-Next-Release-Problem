@@ -18,9 +18,9 @@ class NRPSolution
 	public NRPSolution()
 	{
 		this.totalProfit = 0;
-	}
+    }
 
-	/**
+    /**
      * Basic Constructor
      * 
      * @param customersMap

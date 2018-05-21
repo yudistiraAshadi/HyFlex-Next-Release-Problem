@@ -9,11 +9,9 @@ class Customer
     private double profit;
     private int totalRequestedEnhancements;
 
-//    private Set< Enhancement > originalEnhancementsSet = new HashSet<>();
     private List< Enhancement > originalEnhancementsList = new ArrayList<>();
     private double originalCost;
 
-//    private Set< Enhancement > currentEnhancementsSet = new HashSet<>();
     private List< Enhancement > currentEnhancementsList = new ArrayList<>();
     private double currentCost;
 
@@ -39,7 +37,7 @@ class Customer
         this.originalEnhancementsList = originalEnhancementsList;
         this.setOriginalCost();
     }
-    
+
     /**
      * @return the id
      */
@@ -82,7 +80,7 @@ class Customer
 
         return copyOfOriginalEnhancementsList;
     }
-    
+
     /**
      * @return the currentCost
      */
@@ -90,7 +88,7 @@ class Customer
     {
         return currentCost;
     }
-    
+
     /**
      * @return the currentEnhancementsSet
      */
@@ -98,7 +96,6 @@ class Customer
     {
         return currentEnhancementsList;
     }
-
 
     /**
      * Set the originalCost
@@ -131,7 +128,8 @@ class Customer
      */
     protected void setCurrentEnhancementsList( List< Enhancement > currentEnhancementsList )
     {
-        List< Enhancement > copyOfCurrentEnhancementsList = new ArrayList<>( currentEnhancementsList );
+        List< Enhancement > copyOfCurrentEnhancementsList
+                = new ArrayList<>( currentEnhancementsList );
 
         this.currentEnhancementsList = copyOfCurrentEnhancementsList;
         this.setCurrentCost();

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -23,7 +24,7 @@ import nrp.util.CSVUtils;
 public class NRPLogger
 {
     private final static Logger LOGGER = Logger.getLogger( NRPLogger.class.getName() );
-    
+
     private final static Path logFilePath = Paths.get( "nrp.log" );
     private final static Path csvDirectory = Paths.get( "csv" );
     private final static Path csvFilePath = Paths.get( "csv/test.csv" );
@@ -80,7 +81,8 @@ public class NRPLogger
     }
 
     /**
-     * Function to log at the beginning, should be called before HyperHeuristic.run()
+     * Function to log at the beginning, should be called before
+     * HyperHeuristic.run()
      * 
      * @param hyperHeuristicName
      * @param timeLimit
@@ -89,9 +91,10 @@ public class NRPLogger
     {
         startTime = System.nanoTime();
 
-        System.out.println(
-                "Started: Hyper-heuristic [ " + hyperHeuristicName + " ], instanceId [ " + instanceId + " ], time limit [ " + timeLimit + " ms ]" );
-        LOGGER.info( "Hyper-heuristic [ " + hyperHeuristicName + " ], instanceId [ " + instanceId + " ], time limit [ " + timeLimit + " ms ]" );
+        System.out.println( "Started: Hyper-heuristic [ " + hyperHeuristicName + " ], instanceId [ "
+                + instanceId + " ], time limit [ " + timeLimit + " ms ]" );
+        LOGGER.info( "Hyper-heuristic [ " + hyperHeuristicName + " ], instanceId [ " + instanceId
+                + " ], time limit [ " + timeLimit + " ms ]" );
     }
 
     /**
@@ -102,10 +105,10 @@ public class NRPLogger
      */
     public static void logInitialise( int instanceId, double costLimit )
     {
-        LOGGER.info( "Initialize first solution - Instance ID: " + instanceId + ", Cost limit: " + costLimit );
+        LOGGER.info( "Initialize first solution - Instance ID: " + instanceId + ", Cost limit: "
+                + costLimit );
     }
 
-    
     /**
      * Function to log on ProblemDomain.applyHeuristic() call
      * 
@@ -113,13 +116,14 @@ public class NRPLogger
      */
     public static void logApplyHeuristic( int heuristicNumber )
     {
-        long currentTime = System.nanoTime();
-        HeuristicLog heuristicLog = new HeuristicLog( currentTime, heuristicNumber );
+        long timeElapsed = System.nanoTime() - startTime;
+        assert startTime != 0;
+
+        HeuristicLog heuristicLog = new HeuristicLog( timeElapsed, heuristicNumber );
 
         heuristicLogList.add( heuristicLog );
     }
 
-    
     /**
      * Function to log when the best solution is found
      * 
@@ -131,7 +135,7 @@ public class NRPLogger
         long currentTime = System.nanoTime();
         long timeElapsed = currentTime - startTime;
         assert startTime != 0;
-        
+
         BestSolutionFoundLog bestSolution
                 = new BestSolutionFoundLog( currentTime, heuristicNumber, solutionValue );
 
@@ -152,7 +156,7 @@ public class NRPLogger
      * Function to log at the end of the HyperHeuristic.run()
      * 
      * @param bestSolutionValue
-     * @throws IOException 
+     * @throws IOException
      */
     public static void logFinish( double bestSolutionValue )
     {
@@ -165,40 +169,59 @@ public class NRPLogger
         /*
          * Initialize the CSV directory and file
          */
-        if (!Files.exists(csvDirectory)) {
+        if ( !Files.exists( csvDirectory ) ) {
             try {
-                Files.createDirectories(csvDirectory);
-            } catch (IOException e) {
-                e.printStackTrace();;
+                Files.createDirectories( csvDirectory );
+            } catch ( IOException e ) {
+                e.printStackTrace();
+                ;
             }
         }
-        
-        if (!Files.exists(csvFilePath)) {
+
+        if ( !Files.exists( csvFilePath ) ) {
             try {
-                Files.createFile(csvFilePath);
-            } catch (IOException e) {
-                e.printStackTrace();;
+                Files.createFile( csvFilePath );
+            } catch ( IOException e ) {
+                e.printStackTrace();
+                ;
+            }
+        } else {
+            try {
+                Files.write( csvFilePath, new byte[ 0 ], StandardOpenOption.TRUNCATE_EXISTING );
+            } catch ( IOException e ) {
+                e.printStackTrace();
             }
         }
-        
+
+        /*
+         * Add the CSV file header
+         */
+        String[] csvFileHeader = { "heuristicNumber", "timeElapsed" };
+        try {
+            CSVUtils.writeLine( csvFilePath, Arrays.asList( csvFileHeader ) );
+        } catch ( IOException e ) {
+            e.printStackTrace();
+        }
+
         /*
          * Calculate total called and generate CSV file
          */
         for ( HeuristicLog heuristicLog : heuristicLogList ) {
 
-        	int heuristicNumber = heuristicLog.getHeuristicNumber();
-        	long timeElapsed = heuristicLog.getTimeElapsed();
-        	
-        	/*
-        	 * Write to CSV
-        	 */
-        	String[] heuristicLogString = { Integer.toString(heuristicNumber), Long.toString(timeElapsed) };
-        	try {
-				CSVUtils.writeLine(csvFilePath, Arrays.asList(heuristicLogString));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-        	
+            int heuristicNumber = heuristicLog.getHeuristicNumber();
+            long timeElapsed = heuristicLog.getTimeElapsed();
+
+            /*
+             * Write to CSV
+             */
+            String[] heuristicLogString
+                    = { Integer.toString( heuristicNumber ), Long.toString( timeElapsed ) };
+            try {
+                CSVUtils.writeLine( csvFilePath, Arrays.asList( heuristicLogString ) );
+            } catch ( IOException e ) {
+                e.printStackTrace();
+            }
+
             applyHeuristicCounter += 1;
 
             switch ( heuristicNumber ) {
