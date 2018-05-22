@@ -61,11 +61,6 @@ public class NRP extends ProblemDomain
                         + ( System.currentTimeMillis() - startTime ) );
 
         /*
-         * Log the heuristic
-         */
-        NRPLogger.logApplyHeuristic( heuristicID );
-
-        /*
          * Verify whether current solution is best solution or not
          */
         NRPSolution currentSolution = this.nrpSolutions[ solutionDestinationIndex ];
@@ -74,6 +69,11 @@ public class NRP extends ProblemDomain
             this.bestSolution = new NRPSolution( currentSolution );
 
             NRPLogger.logBestSolutionFound( heuristicID, this.bestSolution.getTotalProfit() );
+        } else {
+            /*
+             * Log the heuristic normally
+             */
+            NRPLogger.logApplyHeuristic( heuristicID );
         }
 
         return this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
@@ -112,11 +112,6 @@ public class NRP extends ProblemDomain
                         + ( System.currentTimeMillis() - startTime ) );
 
         /*
-         * Log the heuristic
-         */
-        NRPLogger.logApplyHeuristic( heuristicID );
-
-        /*
          * Verify whether current solution is best solution or not
          */
         NRPSolution currentSolution = this.nrpSolutions[ solutionDestinationIndex ];
@@ -125,6 +120,11 @@ public class NRP extends ProblemDomain
             this.bestSolution = new NRPSolution( currentSolution );
 
             NRPLogger.logBestSolutionFound( heuristicID, this.bestSolution.getTotalProfit() );
+        } else {
+            /*
+             * Log the heuristic normally
+             */
+            NRPLogger.logApplyHeuristic( heuristicID );
         }
 
         return this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();

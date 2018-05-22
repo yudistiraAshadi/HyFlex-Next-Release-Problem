@@ -2,20 +2,32 @@ package nrp.logger;
 
 class BestSolutionFoundLog
 {
+    private int logApplyHeuristicIterationCounter;
     private long timeFound;
     private int heuristicNumber;
     private double solutionValue;
 
     /**
+     * @param logApplyHeuristicIterationCounter
      * @param timeFound
      * @param heuristicNumber
      * @param solutionValue
      */
-    protected BestSolutionFoundLog( long timeFound, int heuristicNumber, double solutionValue )
+    protected BestSolutionFoundLog( int logApplyHeuristicIterationCounter, long timeFound,
+            int heuristicNumber, double solutionValue )
     {
+        this.logApplyHeuristicIterationCounter = logApplyHeuristicIterationCounter;
         this.timeFound = timeFound;
         this.heuristicNumber = heuristicNumber;
         this.solutionValue = solutionValue;
+    }
+
+    /**
+     * @return the logApplyHeuristicIterationCounter
+     */
+    protected int getLogApplyHeuristicIterationCounter()
+    {
+        return logApplyHeuristicIterationCounter;
     }
 
     /**

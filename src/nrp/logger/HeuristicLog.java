@@ -2,17 +2,29 @@ package nrp.logger;
 
 class HeuristicLog
 {
+    private int logApplyHeuristicIterationCounter;
     private long timeElapsed;
     private int heuristicNumber;
 
     /**
+     * @param logApplyHeuristicIterationCounter
      * @param timeElapsed
      * @param heuristicNumber
      */
-    protected HeuristicLog( long timeElapsed, int heuristicNumber )
+    protected HeuristicLog( int logApplyHeuristicIterationCounter, long timeElapsed,
+            int heuristicNumber )
     {
+        this.logApplyHeuristicIterationCounter = logApplyHeuristicIterationCounter;
         this.timeElapsed = timeElapsed;
         this.heuristicNumber = heuristicNumber;
+    }
+
+    /**
+     * @return the logApplyHeuristicIterationCounter
+     */
+    protected int getLogApplyHeuristicIterationCounter()
+    {
+        return logApplyHeuristicIterationCounter;
     }
 
     /**

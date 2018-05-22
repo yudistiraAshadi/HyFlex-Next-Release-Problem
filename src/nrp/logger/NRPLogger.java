@@ -41,7 +41,8 @@ public class NRPLogger
     /*
      * Basic information
      */
-    private static long startTime = 0;
+    private static long startTime;
+    private static int applyHeuristicIterationCounter;
     private static String hyperHeuristicName;
     private static int instanceId;
 
@@ -67,7 +68,7 @@ public class NRPLogger
              * Initialize logger handlers
              */
             LogManager.getLogManager().reset();
-            fileHandler = new FileHandler( logFilePathString, false );
+            fileHandler = new FileHandler( logFilePathString, true );
 
             /*
              * Format the logger handlers
@@ -103,14 +104,17 @@ public class NRPLogger
      */
     public static void logStart( String hyperHeuristicName, int instanceId, long timeLimit )
     {
-        startTime = System.nanoTime();
+        startTime = System.currentTimeMillis();
+        applyHeuristicIterationCounter = 0;
+
         NRPLogger.hyperHeuristicName = hyperHeuristicName;
         NRPLogger.instanceId = instanceId;
 
         System.out.println( "Started: Hyper-heuristic [ " + hyperHeuristicName + " ], instanceId [ "
                 + instanceId + " ], time limit [ " + timeLimit + " ms ]" );
+
         LOGGER.info( "Hyper-heuristic [ " + hyperHeuristicName + " ], instanceId [ " + instanceId
-                + " ], time limit [ " + timeLimit + " ms ]" );
+                + " ], time limit [ " + timeLimit + " ms ]\n***" );
     }
 
     /**
@@ -132,10 +136,11 @@ public class NRPLogger
      */
     public static void logApplyHeuristic( int heuristicNumber )
     {
-        long timeElapsed = System.nanoTime() - startTime;
-        assert startTime != 0;
-
-        HeuristicLog heuristicLog = new HeuristicLog( timeElapsed, heuristicNumber );
+        applyHeuristicIterationCounter += 1;
+        long timeElapsed = NRPLogger.getTimeElapsedSinceRun();
+        
+        HeuristicLog heuristicLog
+                = new HeuristicLog( applyHeuristicIterationCounter, timeElapsed, heuristicNumber );
 
         heuristicLogList.add( heuristicLog );
     }
@@ -148,23 +153,27 @@ public class NRPLogger
      */
     public static void logBestSolutionFound( int heuristicNumber, double solutionValue )
     {
-        long timeElapsed = System.nanoTime() - startTime;
-        assert startTime != 0;
+        applyHeuristicIterationCounter += 1;
+        long timeElapsed = NRPLogger.getTimeElapsedSinceRun();
 
-        BestSolutionFoundLog bestSolution
-                = new BestSolutionFoundLog( timeElapsed, heuristicNumber, solutionValue );
+        HeuristicLog heuristicLog
+                = new HeuristicLog( applyHeuristicIterationCounter, timeElapsed, heuristicNumber );
+        heuristicLogList.add( heuristicLog );
 
-        long minute = TimeUnit.NANOSECONDS.toMinutes( timeElapsed );
-        long second = TimeUnit.NANOSECONDS.toSeconds( timeElapsed - ( minute * 60 * ( 10 ^ 9 ) ) );
-        long millis = TimeUnit.NANOSECONDS
-                .toMillis( timeElapsed - ( minute * 60 * ( 10 ^ 9 ) ) - ( second * ( 10 ^ 9 ) ) );
+        long minute = TimeUnit.MILLISECONDS.toMinutes( timeElapsed );
+        long second = TimeUnit.MILLISECONDS.toSeconds( timeElapsed )
+                - TimeUnit.MINUTES.toSeconds( minute );
+        long millis = timeElapsed - TimeUnit.MINUTES.toMillis( minute )
+                - TimeUnit.SECONDS.toMillis( second );
 
-        String time = String.format( "[%02d min : %02d.%d sec]", minute, second, millis );
+        String time = String.format( "%d min : %02d.%d sec", minute, second, millis );
 
-        LOGGER.info( "Time elapsed: " + time + " - Best sln value: " + solutionValue
+        LOGGER.info( "Time elapsed: [" + time + "] - Best sln value: " + solutionValue
                 + " - Heuristic #" + heuristicNumber );
 
-        bestSolutionFoundLogList.add( bestSolution );
+        BestSolutionFoundLog bestSolutionFoundLog = new BestSolutionFoundLog(
+                applyHeuristicIterationCounter, timeElapsed, heuristicNumber, solutionValue );
+        bestSolutionFoundLogList.add( bestSolutionFoundLog );
     }
 
     /**
@@ -175,7 +184,6 @@ public class NRPLogger
      */
     public static void logFinish( double bestSolutionValue )
     {
-        int applyHeuristicCounter = 0;
         int randomDeletionAndFirstAddingCounter = 0;
         int deleteHighestCostAddLowestCostCounter = 0;
         int deleteLowestProfitAddHighestProfitCounter = 0;
@@ -216,10 +224,11 @@ public class NRPLogger
             /*
              * Add the CSV files header
              */
-            String[] heuristicLogsHeader = { "iterationNumber", "heuristicNumber", "timeElapsed" };
+            String[] heuristicLogsHeader = { "iterationNumber", "timeElapsed", "heuristicNumber" };
             CSVUtils.writeLine( heuristicLogsWriter, Arrays.asList( heuristicLogsHeader ) );
 
-            String[] bestSolutionFoundHeader = { "timeFound", "heuristicNumber", "solutionValue" };
+            String[] bestSolutionFoundHeader
+                    = { "iterationNumber", "timeFound", "heuristicNumber", "solutionValue" };
             CSVUtils.writeLine( bestSolutionFoundWriter, Arrays.asList( bestSolutionFoundHeader ) );
 
             /*
@@ -227,10 +236,10 @@ public class NRPLogger
              */
             for ( HeuristicLog heuristicLog : heuristicLogList ) {
 
+                int logApplyHeuristicIterationCounter
+                        = heuristicLog.getLogApplyHeuristicIterationCounter();
                 int heuristicNumber = heuristicLog.getHeuristicNumber();
                 long timeElapsed = heuristicLog.getTimeElapsed();
-
-                applyHeuristicCounter += 1;
 
                 switch ( heuristicNumber ) {
                     case 0:
@@ -253,8 +262,9 @@ public class NRPLogger
                 /*
                  * Write to CSV
                  */
-                String[] heuristicLogString = { Integer.toString( applyHeuristicCounter ),
-                        Integer.toString( heuristicNumber ), Long.toString( timeElapsed ) };
+                String[] heuristicLogString
+                        = { Integer.toString( logApplyHeuristicIterationCounter ),
+                                Long.toString( timeElapsed ), Integer.toString( heuristicNumber ) };
                 CSVUtils.writeLine( heuristicLogsWriter, Arrays.asList( heuristicLogString ) );
             }
 
@@ -263,6 +273,8 @@ public class NRPLogger
              */
             for ( BestSolutionFoundLog bestSolutionFoundLog : bestSolutionFoundLogList ) {
 
+                int logApplyHeuristicIterationCounter
+                        = bestSolutionFoundLog.getLogApplyHeuristicIterationCounter();
                 long timeFound = bestSolutionFoundLog.getTimeFound();
                 int heuristicNumber = bestSolutionFoundLog.getHeuristicNumber();
                 double solutionValue = bestSolutionFoundLog.getSolutionValue();
@@ -270,15 +282,17 @@ public class NRPLogger
                 /*
                  * Write to CSV
                  */
-                String[] bestSolutionFoundLogString = { Long.toString( timeFound ),
-                        Integer.toString( heuristicNumber ), Double.toString( solutionValue ) };
+                String[] bestSolutionFoundLogString
+                        = { Integer.toString( logApplyHeuristicIterationCounter ),
+                                Long.toString( timeFound ), Integer.toString( heuristicNumber ),
+                                Double.toString( solutionValue ) };
                 CSVUtils.writeLine( bestSolutionFoundWriter,
                         Arrays.asList( bestSolutionFoundLogString ) );
             }
 
             heuristicLogsWriter.flush();
             bestSolutionFoundWriter.flush();
-            
+
             heuristicLogsWriter.close();
             bestSolutionFoundWriter.close();
 
@@ -287,7 +301,7 @@ public class NRPLogger
         }
 
         LOGGER.info( "Best solution value: " + bestSolutionValue );
-        LOGGER.info( "Total heuristic called: " + applyHeuristicCounter + " times" );
+        LOGGER.info( "Total heuristic called: " + applyHeuristicIterationCounter + " times" );
 
         // Heuristic one
         LOGGER.info( "Heuristic #1 - Called: " + randomDeletionAndFirstAddingCounter + " times" );
@@ -302,5 +316,23 @@ public class NRPLogger
         // Heuristic four
         LOGGER.info( "Heuristic #4 - Called: "
                 + deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter + " times" );
+
+        // Finishing Line
+        LOGGER.info(
+                "\n--------------------------------------------------------------------------------------------------------\n" );
+    }
+
+    /**
+     * Calculate and return the time elapsed since HyperHeuristic.run() function is
+     * being called
+     * 
+     * @return timeElapsed
+     */
+    private static long getTimeElapsedSinceRun()
+    {
+        long timeElapsed = System.currentTimeMillis() - startTime;
+        assert ( startTime != 0 );
+
+        return timeElapsed;
     }
 }
