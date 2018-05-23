@@ -3,6 +3,8 @@ package nrp.logger;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,6 +48,8 @@ public class NRPLogger
     private static String hyperHeuristicName;
     private static int instanceId;
 
+    private static ThreadMXBean thread = ManagementFactory.getThreadMXBean();
+    
     private static List< BestSolutionFoundLog > bestSolutionFoundLogList = new ArrayList<>();
     private static List< HeuristicLog > heuristicLogList = new ArrayList<>();
 
@@ -104,7 +108,7 @@ public class NRPLogger
      */
     public static void logStart( String hyperHeuristicName, int instanceId, long timeLimit )
     {
-        startTime = System.currentTimeMillis();
+        startTime = thread.getCurrentThreadCpuTime();
         applyHeuristicIterationCounter = 0;
 
         NRPLogger.hyperHeuristicName = hyperHeuristicName;
@@ -118,18 +122,6 @@ public class NRPLogger
     }
 
     /**
-     * Function to log on ProblemDomain.initialiseSolution() call
-     * 
-     * @param instanceId
-     * @param costLimit
-     */
-    public static void logInitialise( int instanceId, double costLimit )
-    {
-        LOGGER.info( "Initialize first solution - Instance ID: " + instanceId + ", Cost limit: "
-                + costLimit );
-    }
-
-    /**
      * Function to log on ProblemDomain.applyHeuristic() call
      * 
      * @param heuristicNumber
@@ -138,7 +130,7 @@ public class NRPLogger
     {
         applyHeuristicIterationCounter += 1;
         long timeElapsed = NRPLogger.getTimeElapsedSinceRun();
-        
+
         HeuristicLog heuristicLog
                 = new HeuristicLog( applyHeuristicIterationCounter, timeElapsed, heuristicNumber );
 
@@ -160,16 +152,16 @@ public class NRPLogger
                 = new HeuristicLog( applyHeuristicIterationCounter, timeElapsed, heuristicNumber );
         heuristicLogList.add( heuristicLog );
 
-        long minute = TimeUnit.MILLISECONDS.toMinutes( timeElapsed );
-        long second = TimeUnit.MILLISECONDS.toSeconds( timeElapsed )
+        long minute = TimeUnit.NANOSECONDS.toMinutes( timeElapsed );
+        long second = TimeUnit.NANOSECONDS.toSeconds( timeElapsed )
                 - TimeUnit.MINUTES.toSeconds( minute );
-        long millis = timeElapsed - TimeUnit.MINUTES.toMillis( minute )
+        long millis = TimeUnit.NANOSECONDS.toMillis( timeElapsed ) - TimeUnit.MINUTES.toMillis( minute )
                 - TimeUnit.SECONDS.toMillis( second );
 
         String time = String.format( "%d min : %02d.%d sec", minute, second, millis );
 
-        LOGGER.info( "Time elapsed: [" + time + "] - Best sln value: " + solutionValue
-                + " - Heuristic #" + heuristicNumber );
+        LOGGER.info( "Time elapsed: [" + time + "] - Iteration #" + applyHeuristicIterationCounter
+                + " - Best sln value: " + solutionValue + " - Heuristic #" + heuristicNumber );
 
         BestSolutionFoundLog bestSolutionFoundLog = new BestSolutionFoundLog(
                 applyHeuristicIterationCounter, timeElapsed, heuristicNumber, solutionValue );
@@ -330,7 +322,7 @@ public class NRPLogger
      */
     private static long getTimeElapsedSinceRun()
     {
-        long timeElapsed = System.currentTimeMillis() - startTime;
+        long timeElapsed = thread.getCurrentThreadCpuTime() - startTime;
         assert ( startTime != 0 );
 
         return timeElapsed;
