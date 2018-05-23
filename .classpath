@@ -7,7 +7,5 @@
 	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.5.2.jar"/>
 	<classpathentry kind="lib" path="lib/chesc.jar"/>
-	<classpathentry kind="lib" path="lib/FSILS.jar"/>
-	<classpathentry kind="lib" path="lib/Lib-EPH_CHeSC_Meignan-2012-01-16.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

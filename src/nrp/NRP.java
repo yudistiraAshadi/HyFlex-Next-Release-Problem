@@ -465,17 +465,11 @@ public class NRP extends ProblemDomain
     public void initialiseSolution( int solutionIndex )
     {
         NRPSolution initialSolution = new NRPSolution( this.nrpInstance.getCustomersList() );
-
-        int instanceId = this.nrpInstance.getInstanceId();
         double costLimit = this.nrpInstance.getCostLimit();
-
-        /*
-         * Log the initialiseSolution function
-         */
-        NRPLogger.logInitialise( instanceId, costLimit );
 
         List< Customer > haveNotBeenAcceptedCustomers
                 = initialSolution.getHaveNotBeenAcceptedCustomers();
+        Collections.shuffle( haveNotBeenAcceptedCustomers );
         Iterator< Customer > customersIterator = haveNotBeenAcceptedCustomers.iterator();
 
         if ( customersIterator.hasNext() ) {

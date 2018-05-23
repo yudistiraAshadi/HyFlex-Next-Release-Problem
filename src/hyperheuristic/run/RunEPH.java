@@ -1,8 +1,8 @@
-package hyperheuristic;
+package hyperheuristic.run;
 
 import AbstractClasses.HyperHeuristic;
 import AbstractClasses.ProblemDomain;
-import davidChescEPH.DavidChescEPH;
+import hyperheuristic.EPH;
 import nrp.NRP;
 import nrp.logger.NRPLogger;
 
@@ -12,7 +12,7 @@ public class RunEPH
     {
         long seed = 1234;
         int instanceId = 5;
-        long timeLimit = 10000;
+        long timeLimit = 60000;
         String hyperHeuristicName = "DavidChescEPH";
 
         // create a ProblemDomain object with a seed for the random number generator
@@ -20,7 +20,7 @@ public class RunEPH
 
         // creates an EPH object with a seed for the random number
         // generator
-        HyperHeuristic hyper_heuristic_object = new DavidChescEPH( seed );
+        HyperHeuristic hyper_heuristic_object = new EPH( seed );
 
         // we must load an instance within the problem domain
         problem.loadInstance( instanceId );

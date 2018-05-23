@@ -2,7 +2,7 @@
     Adapted from ExampleRun1.java (chesc.jar @ http://www.asap.cs.nott.ac.uk/external/chesc2011/hyflex_download.html)
 */
 
-package hyperheuristic;
+package hyperheuristic.run;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -25,7 +25,7 @@ public class RunGIHH {
 	public static void main(String[] args) {
 		
 		long seed = 1234;
-		long totalExecutionTime = 10000;
+		long totalExecutionTime = 15000;
 		int instanceId = 5;
 		String hyperHeuristicName = "GIHH";
 		
@@ -57,8 +57,8 @@ public class RunGIHH {
 
 		//now that all of the parameters have been loaded, the run method can be called.
 		//this method starts the timer, and then calls the solve() method of the hyper_heuristic_object.
-        NRPLogger.logStart( hyperHeuristicName, instanceId, totalExecutionTime );
-		hyper_heuristic_object.run();
+	    NRPLogger.logStart( hyperHeuristicName, instanceId, totalExecutionTime );
+        hyper_heuristic_object.run();
 
 		//obtain the best solution found within the time limit
 		double bestSolutionValue = 1.0 / hyper_heuristic_object.getBestSolutionValue();

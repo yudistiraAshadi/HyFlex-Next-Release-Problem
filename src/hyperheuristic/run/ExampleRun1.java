@@ -1,7 +1,8 @@
-package hyperheuristic;
+package hyperheuristic.run;
 
 import AbstractClasses.HyperHeuristic;
 import AbstractClasses.ProblemDomain;
+import hyperheuristic.ExampleHyperHeuristic1;
 import nrp.NRP;
 import nrp.logger.NRPLogger;
 
