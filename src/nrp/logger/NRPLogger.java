@@ -49,7 +49,7 @@ public class NRPLogger
     private static int instanceId;
 
     private static ThreadMXBean thread = ManagementFactory.getThreadMXBean();
-    
+
     private static List< BestSolutionFoundLog > bestSolutionFoundLogList = new ArrayList<>();
     private static List< HeuristicLog > heuristicLogList = new ArrayList<>();
 
@@ -155,8 +155,8 @@ public class NRPLogger
         long minute = TimeUnit.NANOSECONDS.toMinutes( timeElapsed );
         long second = TimeUnit.NANOSECONDS.toSeconds( timeElapsed )
                 - TimeUnit.MINUTES.toSeconds( minute );
-        long millis = TimeUnit.NANOSECONDS.toMillis( timeElapsed ) - TimeUnit.MINUTES.toMillis( minute )
-                - TimeUnit.SECONDS.toMillis( second );
+        long millis = TimeUnit.NANOSECONDS.toMillis( timeElapsed )
+                - TimeUnit.MINUTES.toMillis( minute ) - TimeUnit.SECONDS.toMillis( second );
 
         String time = String.format( "%d min : %02d.%d sec", minute, second, millis );
 
@@ -166,6 +166,11 @@ public class NRPLogger
         BestSolutionFoundLog bestSolutionFoundLog = new BestSolutionFoundLog(
                 applyHeuristicIterationCounter, timeElapsed, heuristicNumber, solutionValue );
         bestSolutionFoundLogList.add( bestSolutionFoundLog );
+    }
+
+    public static void logAcceptedSolution()
+    {
+
     }
 
     /**
@@ -231,7 +236,7 @@ public class NRPLogger
                 int logApplyHeuristicIterationCounter
                         = heuristicLog.getLogApplyHeuristicIterationCounter();
                 int heuristicNumber = heuristicLog.getHeuristicNumber();
-                long timeElapsed = heuristicLog.getTimeElapsed();
+                long timeElapsed = TimeUnit.NANOSECONDS.toMillis( heuristicLog.getTimeElapsed() );
 
                 switch ( heuristicNumber ) {
                     case 0:
@@ -267,7 +272,8 @@ public class NRPLogger
 
                 int logApplyHeuristicIterationCounter
                         = bestSolutionFoundLog.getLogApplyHeuristicIterationCounter();
-                long timeFound = bestSolutionFoundLog.getTimeFound();
+                long timeFound
+                        = TimeUnit.NANOSECONDS.toMillis( bestSolutionFoundLog.getTimeFound() );
                 int heuristicNumber = bestSolutionFoundLog.getHeuristicNumber();
                 double solutionValue = bestSolutionFoundLog.getSolutionValue();
 
