@@ -19,8 +19,11 @@ class NRPInstance
     private int instanceId;
     private double totalCost;
     private double costLimit;
-    private double costLimitRatio = 0.7;
-    private String fileName = "src/nrp/instance/nrp";
+    private double costLimitRatio;
+    private String filePath = "src/nrp/instance/";
+    private String[] fileNames = { "nrp1-0.3", "nrp1-0.5", "nrp1-0.7", "nrp2-0.3", "nrp2-0.5",
+            "nrp2-0.7", "nrp3-0.3", "nrp3-0.5", "nrp3-0.7", "nrp4-0.3", "nrp4-0.5", "nrp4-0.7",
+            "nrp5-0.3", "nrp5-0.5", "nrp5-0.7" };
 
     protected NRPInstance( int instanceId )
     {
@@ -49,9 +52,15 @@ class NRPInstance
         int totalEnhancement = 0;
         List< Integer > enhancementCosts = new ArrayList< Integer >();
 
-        Path pathToInstanceFile
-                = FileSystems.getDefault().getPath( ".", fileName + instanceId + ".txt" );
+        Path pathToInstanceFile = FileSystems.getDefault().getPath( ".",
+                filePath + fileNames[ instanceId - 1 ] + ".txt" );
         try ( BufferedReader br = Files.newBufferedReader( pathToInstanceFile ) ) {
+
+            /*
+             * Get cost limit ratio
+             */
+            Double costLimitRatio = Double.parseDouble( br.readLine() );
+            this.costLimitRatio = costLimitRatio;
 
             /*
              * Get enhancement costs array, read it per level, as the format of the file,
@@ -287,25 +296,24 @@ class NRPInstance
         for ( Customer customer : this.customersList ) {
             stringBuilder.append( "\n" + customer.getId() + ", " + customer.getProfit() + ", "
                     + customer.getOriginalCost() + ", [" );
-            
+
             for ( Enhancement enhancement : customer.getOriginalEnhancementsList() ) {
                 stringBuilder.append( " " + enhancement.getId() );
             }
-            
+
             stringBuilder.append( " ]" );
         }
 
-        
-        
         stringBuilder.append( "\nAll Enhancemens: \n" );
         stringBuilder.append( "enhancementId, enhancementCost, enhancementDependencies" );
         for ( Enhancement enhancement : this.enhancementsList ) {
-            stringBuilder.append( "\n" + enhancement.getId() + ", " + enhancement.getCost() + ", [" );
-            
+            stringBuilder
+                    .append( "\n" + enhancement.getId() + ", " + enhancement.getCost() + ", [" );
+
             for ( Enhancement enhancement2 : enhancement.getDependencyEnhancementsList() ) {
                 stringBuilder.append( " " + enhancement2.getId() );
             }
-            
+
             stringBuilder.append( " ]" );
         }
 

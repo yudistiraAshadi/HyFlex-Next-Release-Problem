@@ -7,48 +7,57 @@ package hyperheuristic.run;
  * affiliation: Vrije Universiteit Brussel
  */
 
-import java.util.Date;
-
 import nrp.NRP;
 import nrp.logger.NRPLogger;
 import AbstractClasses.HyperHeuristic;
 import AbstractClasses.ProblemDomain;
 import hyperheuristic.FairShareILS;
 
-
-public class RunFairShareILS {
+public class RunFairShareILS
+{
 
     /**
      * @param args
      */
-    public static void main(String[] args) {
-        long seed = new Date().getTime();
-        long totalExecutionTime = 10000;
-        int instanceId = 1;
+    public static void main( String[] args )
+    {
+        long seed = 1234;
+        long totalExecutionTime = 5000;
+        
+        int totalInstances = 2;
+        int totalRuns = 2;
+        
         String hyperHeuristicName = "FairShareILS";
         
-        //algorithm used (FS-ILS with default parameter settings)
-        HyperHeuristic algo = new FairShareILS(seed);
-        
-        //benchmark instance solved (4th instance in the Maximum Satisfiability problem domain)
-        ProblemDomain problem = new NRP(seed);
-        problem.loadInstance(instanceId);
-        
-        //time we're allowed to optimize
-        //long t_allowed = 10000;
-        algo.setTimeLimit(totalExecutionTime);
+        for ( int instance = 1; instance <= totalInstances; instance++ ) {
+            for ( int run = 1; run <= totalRuns; run++ ) {
 
-        algo.loadProblemDomain(problem);
-        
-        //start optimizing
-//        System.out.println("Testing "+algo+" for "+totalExecutionTime+" ms on "+problem.getClass().getSimpleName()+"["+instanceId+"]...");
-        NRPLogger.logStart( hyperHeuristicName, instanceId, totalExecutionTime );
-        algo.run();
+                // algorithm used (FS-ILS with default parameter settings)
+                HyperHeuristic algo = new FairShareILS( seed * run );
 
-        //print out quality of best solution found
-        double bestSolutionValue = 1.0 / algo.getBestSolutionValue();
-        System.out.println("Best Solution Value: " + bestSolutionValue);
-        NRPLogger.logFinish( bestSolutionValue );
+                // benchmark instance solved (4th instance in the Maximum Satisfiability problem
+                // domain)
+                ProblemDomain problem = new NRP( seed * run  );
+                problem.loadInstance( instance );
+
+                // time we're allowed to optimize
+                // long t_allowed = 10000;
+                algo.setTimeLimit( totalExecutionTime );
+
+                algo.loadProblemDomain( problem );
+
+                // start optimizing
+                // System.out.println("Testing "+algo+" for "+totalExecutionTime+" ms on
+                // "+problem.getClass().getSimpleName()+"["+instanceId+"]...");
+                NRPLogger.logStart( hyperHeuristicName, instance, run, totalExecutionTime );
+                algo.run();
+
+                // print out quality of best solution found
+                double bestSolutionValue = 0 - algo.getBestSolutionValue();
+                System.out.println( "Best Solution Value: " + bestSolutionValue );
+                NRPLogger.logFinish( bestSolutionValue );
+            }
+        }
     }
 
 }

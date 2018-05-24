@@ -39,6 +39,7 @@ public class NRPLogger
     private final static Path nrpResultsParentDirectory = Paths.get( "nrp-results" );
     private final static String heuristicLogsFilename = "heuristicLogs.csv";
     private final static String bestSolutionFoundFilename = "bestSolutionFound.csv";
+    private final static String initialSolutionFilename = "initialSolution.csv";
 
     /*
      * Basic information
@@ -47,18 +48,30 @@ public class NRPLogger
     private static int applyHeuristicIterationCounter;
     private static String hyperHeuristicName;
     private static int instanceId;
+    private static int runNumber;
 
     private static ThreadMXBean thread = ManagementFactory.getThreadMXBean();
 
+    private static double initialSolution;
     private static List< BestSolutionFoundLog > bestSolutionFoundLogList = new ArrayList<>();
     private static List< HeuristicLog > heuristicLogList = new ArrayList<>();
 
     /**
      * Initialize the logger file
      */
-    public static void init()
+    private static void init()
     {
+        /*
+         * Re-initialise all of the variables
+         */
         Handler fileHandler = null;
+
+        startTime = thread.getCurrentThreadCpuTime();
+        applyHeuristicIterationCounter = 0;
+
+        initialSolution = 0;
+        bestSolutionFoundLogList = new ArrayList<>();
+        heuristicLogList = new ArrayList<>();
 
         try {
             /*
@@ -106,19 +119,24 @@ public class NRPLogger
      * @param hyperHeuristicName
      * @param timeLimit
      */
-    public static void logStart( String hyperHeuristicName, int instanceId, long timeLimit )
+    public static void logStart( String hyperHeuristicName, int instanceId, int runNumber,
+            long timeLimit )
     {
-        startTime = thread.getCurrentThreadCpuTime();
-        applyHeuristicIterationCounter = 0;
+
+        /*
+         * Initialise NRPLogger
+         */
+        NRPLogger.init();
 
         NRPLogger.hyperHeuristicName = hyperHeuristicName;
         NRPLogger.instanceId = instanceId;
+        NRPLogger.runNumber = runNumber;
 
         System.out.println( "Started: Hyper-heuristic [ " + hyperHeuristicName + " ], instanceId [ "
-                + instanceId + " ], time limit [ " + timeLimit + " ms ]" );
+                + instanceId + " ], run [ " + runNumber + " ], time limit [ " + timeLimit + " ms ]" );
 
         LOGGER.info( "Hyper-heuristic [ " + hyperHeuristicName + " ], instanceId [ " + instanceId
-                + " ], time limit [ " + timeLimit + " ms ]\n***" );
+                + " ], run [ " + runNumber + " ], time limit [ " + timeLimit + " ms ]\n***" );
     }
 
     /**
@@ -180,12 +198,20 @@ public class NRPLogger
     }
 
     /**
+     * @param solutionValue
+     */
+    public static void logInitialiseSolution( double solutionValue )
+    {
+        initialSolution = solutionValue;
+    }
+
+    /**
      * Function to log at the end of the HyperHeuristic.run()
      * 
      * @param bestSolutionValue
      * @throws IOException
      */
-    public static void logFinish( double bestSolutionValue, String bestSolutionToString, String instance )
+    public static void logFinish( double bestSolutionValue )
     {
         int randomDeletionAndFirstAddingCounter = 0;
         int deleteHighestCostAddLowestCostCounter = 0;
@@ -207,7 +233,7 @@ public class NRPLogger
             String currentDate = LocalDateTime.now()
                     .format( DateTimeFormatter.ofPattern( "yyyy-MM-dd HH_mm_ss" ) );
             String currentResultDirectoryName
-                    = "[" + currentDate + "]-" + hyperHeuristicName + "-instance#" + instanceId;
+                    = "[" + currentDate + "]-" + hyperHeuristicName + "-instance " + instanceId + "-run " + runNumber;
             Path currentRunResultDirectory
                     = Paths.get( nrpResultsParentDirectory.toAbsolutePath().normalize().toString(),
                             currentResultDirectoryName );
@@ -223,6 +249,9 @@ public class NRPLogger
             FileWriter bestSolutionFoundWriter = new FileWriter(
                     currentRunResultDirectory.toAbsolutePath().normalize().toString() + "/"
                             + bestSolutionFoundFilename );
+            FileWriter initialSolutionWriter = new FileWriter(
+                    currentRunResultDirectory.toAbsolutePath().normalize().toString() + "/"
+                            + initialSolutionFilename );
 
             /*
              * Add the CSV files header
@@ -234,6 +263,9 @@ public class NRPLogger
             String[] bestSolutionFoundHeader
                     = { "iterationNumber", "timeFound", "heuristicNumber", "solutionValue" };
             CSVUtils.writeLine( bestSolutionFoundWriter, Arrays.asList( bestSolutionFoundHeader ) );
+
+            String[] initialSolutionHeader = { "initialSolutionValue" };
+            CSVUtils.writeLine( initialSolutionWriter, Arrays.asList( initialSolutionHeader ) );
 
             /*
              * Iterate through heuristicLog and generate CSV file
@@ -247,6 +279,8 @@ public class NRPLogger
                 double solutionValue = heuristicLog.getSolutionValue();
 
                 switch ( heuristicNumber ) {
+                    case -1:
+                        break;
                     case 0:
                         randomDeletionAndFirstAddingCounter += 1;
                         break;
@@ -298,13 +332,21 @@ public class NRPLogger
             }
 
             /*
+             * Output initial solution
+             */
+            CSVUtils.writeLine( initialSolutionWriter,
+                    Arrays.asList( Double.toString( initialSolution ) ) );
+
+            /*
              * Flush and close all writer
              */
             heuristicLogsWriter.flush();
             bestSolutionFoundWriter.flush();
+            initialSolutionWriter.flush();
 
             heuristicLogsWriter.close();
             bestSolutionFoundWriter.close();
+            initialSolutionWriter.close();
 
         } catch ( IOException e ) {
             e.printStackTrace();
@@ -326,10 +368,6 @@ public class NRPLogger
         // Heuristic four
         LOGGER.info( "Heuristic #4 - Called: "
                 + deleteLowestProfitCostRatioAddHighestProfitCostRatioCounter + " times" );
-        
-        LOGGER.info( "\n" + bestSolutionToString );
-        
-        LOGGER.info( "\n" + instance );
 
         // Finishing Line
         LOGGER.info(

@@ -347,8 +347,7 @@ class NRPSolution
         }
 
         stringBuilder.append( "\nEnhancements: " );
-        Iterator< Enhancement > acceptedEnhancementsIterator
-                = this.acceptedEnhancements.iterator();
+        Iterator< Enhancement > acceptedEnhancementsIterator = this.acceptedEnhancements.iterator();
         if ( acceptedEnhancementsIterator.hasNext() ) {
             Enhancement enhancement = acceptedEnhancementsIterator.next();
 

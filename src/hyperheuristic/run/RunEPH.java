@@ -11,40 +11,48 @@ public class RunEPH
     public static void main( String[] args )
     {
         long seed = 1234;
-        int instanceId = 1;
-        long timeLimit = 10000;
+        long totalExecutionTime = 5000;
+
+        int totalInstances = 2;
+        int totalRuns = 2;
+
         String hyperHeuristicName = "DavidChescEPH";
 
-        // create a ProblemDomain object with a seed for the random number generator
-        ProblemDomain problem = new NRP( seed );
+        for ( int instance = 1; instance <= totalInstances; instance++ ) {
+            for ( int run = 1; run <= totalRuns; run++ ) {
 
-        // creates an EPH object with a seed for the random number
-        // generator
-        HyperHeuristic hyper_heuristic_object = new EPH( seed );
+                // create a ProblemDomain object with a seed for the random number generator
+                ProblemDomain problem = new NRP( seed * run );
 
-        // we must load an instance within the problem domain
-        problem.loadInstance( instanceId );
+                // creates an EPH object with a seed for the random number
+                // generator
+                HyperHeuristic hyper_heuristic_object = new EPH( seed * run );
 
-        // we must set the time limit for the hyper-heuristic in milliseconds
-        hyper_heuristic_object.setTimeLimit( timeLimit );
+                // we must load an instance within the problem domain
+                problem.loadInstance( instance );
 
-        // a key step is to assign the ProblemDomain object to the HyperHeuristic
-        // object.
-        // However, this should be done after the instance has been loaded, and after
-        // the time limit has been set
-        hyper_heuristic_object.loadProblemDomain( problem );
+                // we must set the time limit for the hyper-heuristic in milliseconds
+                hyper_heuristic_object.setTimeLimit( totalExecutionTime );
 
-        // now that all of the parameters have been loaded, the run method can be
-        // called.
-        // this method starts the timer, and then calls the solve() method of the
-        // hyper_heuristic_object.
-        NRPLogger.logStart( hyperHeuristicName, instanceId, timeLimit );
-        hyper_heuristic_object.run();
+                // a key step is to assign the ProblemDomain object to the HyperHeuristic
+                // object.
+                // However, this should be done after the instance has been loaded, and after
+                // the time limit has been set
+                hyper_heuristic_object.loadProblemDomain( problem );
 
-        // obtain the best solution found within the time limit
-        double bestSolutionValue = 1.0 / hyper_heuristic_object.getBestSolutionValue();
-        System.out.println( "The best solution value: " + bestSolutionValue );
+                // now that all of the parameters have been loaded, the run method can be
+                // called.
+                // this method starts the timer, and then calls the solve() method of the
+                // hyper_heuristic_object.
+                NRPLogger.logStart( hyperHeuristicName, instance, run, totalExecutionTime );
+                hyper_heuristic_object.run();
 
-        NRPLogger.logFinish( bestSolutionValue );
+                // obtain the best solution found within the time limit
+                double bestSolutionValue = 0 - hyper_heuristic_object.getBestSolutionValue();
+                System.out.println( "The best solution value: " + bestSolutionValue );
+
+                NRPLogger.logFinish( bestSolutionValue );
+            }
+        }
     }
 }

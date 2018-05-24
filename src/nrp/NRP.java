@@ -21,11 +21,6 @@ public class NRP extends ProblemDomain
     public NRP( long seed )
     {
         super( seed );
-
-        /*
-         * Initialise NRPLogger
-         */
-        NRPLogger.init();
     }
 
     @Override
@@ -461,7 +456,7 @@ public class NRP extends ProblemDomain
     @Override
     public int getNumberOfInstances()
     {
-        return 5;
+        return 15;
     }
 
     @Override
@@ -497,6 +492,8 @@ public class NRP extends ProblemDomain
         NRPSolution currentSolution = this.nrpSolutions[ solutionIndex ];
         if ( this.isBestSolution( currentSolution ) ) {
             this.bestSolution = new NRPSolution( currentSolution );
+            
+            NRPLogger.logInitialiseSolution( currentSolution.getTotalProfit() );
         }
     }
 
