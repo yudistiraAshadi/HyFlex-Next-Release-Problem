@@ -60,20 +60,21 @@ public class NRP extends ProblemDomain
                 = (int) ( (long) this.heuristicCallTimeRecord[ heuristicID ]
                         + ( System.currentTimeMillis() - startTime ) );
 
+        NRPSolution currentSolution = this.nrpSolutions[ solutionDestinationIndex ];
+
         /*
          * Verify whether current solution is best solution or not
          */
-        NRPSolution currentSolution = this.nrpSolutions[ solutionDestinationIndex ];
         if ( this.isBestSolution( currentSolution ) ) {
 
             this.bestSolution = new NRPSolution( currentSolution );
 
-            NRPLogger.logBestSolutionFound( heuristicID, this.bestSolution.getTotalProfit() );
+            NRPLogger.logBestSolutionFound( heuristicID, currentSolution.getTotalProfit() );
         } else {
             /*
              * Log the heuristic normally
              */
-            NRPLogger.logApplyHeuristic( heuristicID );
+            NRPLogger.logApplyHeuristic( heuristicID, currentSolution.getTotalProfit() );
         }
 
         return this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
@@ -111,20 +112,21 @@ public class NRP extends ProblemDomain
                 = (int) ( (long) this.heuristicCallTimeRecord[ heuristicID ]
                         + ( System.currentTimeMillis() - startTime ) );
 
+        NRPSolution currentSolution = this.nrpSolutions[ solutionDestinationIndex ];
+
         /*
          * Verify whether current solution is best solution or not
          */
-        NRPSolution currentSolution = this.nrpSolutions[ solutionDestinationIndex ];
         if ( this.isBestSolution( currentSolution ) ) {
 
             this.bestSolution = new NRPSolution( currentSolution );
 
-            NRPLogger.logBestSolutionFound( heuristicID, this.bestSolution.getTotalProfit() );
+            NRPLogger.logBestSolutionFound( heuristicID, currentSolution.getTotalProfit() );
         } else {
             /*
              * Log the heuristic normally
              */
-            NRPLogger.logApplyHeuristic( heuristicID );
+            NRPLogger.logApplyHeuristic( heuristicID, currentSolution.getTotalProfit() );
         }
 
         return this.nrpSolutions[ solutionDestinationIndex ].getTotalProfit();
@@ -382,7 +384,8 @@ public class NRP extends ProblemDomain
     @Override
     public String bestSolutionToString()
     {
-        return "Biggest Profit = " + this.bestSolution.getTotalProfit();
+//        return "Biggest Profit = " + this.bestSolution.getTotalProfit();
+        return this.bestSolution.toString();
     }
 
     @Override
@@ -406,13 +409,13 @@ public class NRP extends ProblemDomain
     @Override
     public double getBestSolutionValue()
     {
-        return 1.0 / this.bestSolution.getTotalProfit();
+        return 0 - this.bestSolution.getTotalProfit();
     }
 
     @Override
     public double getFunctionValue( int solutionIndex )
     {
-        return 1.0 / this.nrpSolutions[ solutionIndex ].getTotalProfit();
+        return 0 - this.nrpSolutions[ solutionIndex ].getTotalProfit();
     }
 
     @Override
@@ -470,10 +473,11 @@ public class NRP extends ProblemDomain
         List< Customer > haveNotBeenAcceptedCustomers
                 = initialSolution.getHaveNotBeenAcceptedCustomers();
         Collections.shuffle( haveNotBeenAcceptedCustomers );
+        
         Iterator< Customer > customersIterator = haveNotBeenAcceptedCustomers.iterator();
-
         if ( customersIterator.hasNext() ) {
             Customer customer = customersIterator.next();
+            
             initialSolution.addAnAcceptedCustomer( customer );
 
             while ( customersIterator.hasNext() ) {
@@ -529,5 +533,4 @@ public class NRP extends ProblemDomain
     {
         return this.nrpInstance.toString();
     }
-
 }

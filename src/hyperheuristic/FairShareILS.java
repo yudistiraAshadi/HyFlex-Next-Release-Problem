@@ -2,6 +2,7 @@ package hyperheuristic;
 
 import AbstractClasses.HyperHeuristic;
 import AbstractClasses.ProblemDomain;
+
 import java.util.Vector;
 
 public class FairShareILS extends HyperHeuristic {
@@ -48,8 +49,10 @@ public class FairShareILS extends HyperHeuristic {
                 int[] arrn2 = this.news;
                 int n2 = option;
                 arrn2[n2] = arrn2[n2] + 1;
+                
                 this.e_current = this.e_proposed;
                 problem.copySolution(this.c_proposed, this.c_current);
+                
             }
             this.evaluations[option] = (1.0 + (double) this.news[option]) / (double) this.durations[option];
             if (!this.restart())

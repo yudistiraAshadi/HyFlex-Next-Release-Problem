@@ -1,6 +1,7 @@
 package nrp;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 class NRPSolution
@@ -9,15 +10,14 @@ class NRPSolution
     private List< Customer > haveNotBeenAcceptedCustomers = new ArrayList<>();
     private List< Enhancement > acceptedEnhancements = new ArrayList<>();
 
-    private double totalCost;
-    private double totalProfit = 0;
+    private double totalCost = 0.0;
+    private double totalProfit = 0.0;
 
     /**
      * Empty constructor
      */
-	public NRPSolution()
-	{
-		this.totalProfit = 0;
+    public NRPSolution()
+    {
     }
 
     /**
@@ -309,4 +309,58 @@ class NRPSolution
         this.setTotalProfit();
     }
 
+    @Override
+    public String toString()
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append( "Total cost: " + this.totalCost + "\n" );
+        stringBuilder.append( "Total profit: " + this.totalProfit + "\n" );
+
+        stringBuilder.append( "Accepted customers: " );
+        Iterator< Customer > acceptedCustomersIterator = this.acceptedCustomers.iterator();
+        if ( acceptedCustomersIterator.hasNext() ) {
+            Customer customer = acceptedCustomersIterator.next();
+
+            stringBuilder.append( customer.getId() );
+
+            while ( acceptedCustomersIterator.hasNext() ) {
+                customer = acceptedCustomersIterator.next();
+
+                stringBuilder.append( ", " + customer.getId() );
+            }
+        }
+
+        stringBuilder.append( "\nHave not been accepted customers: " );
+        Iterator< Customer > haveNotBeenAcceptedCustomersIterator
+                = this.haveNotBeenAcceptedCustomers.iterator();
+        if ( haveNotBeenAcceptedCustomersIterator.hasNext() ) {
+            Customer customer = haveNotBeenAcceptedCustomersIterator.next();
+
+            stringBuilder.append( customer.getId() );
+
+            while ( haveNotBeenAcceptedCustomersIterator.hasNext() ) {
+                customer = haveNotBeenAcceptedCustomersIterator.next();
+
+                stringBuilder.append( ", " + customer.getId() );
+            }
+        }
+
+        stringBuilder.append( "\nEnhancements: " );
+        Iterator< Enhancement > acceptedEnhancementsIterator
+                = this.acceptedEnhancements.iterator();
+        if ( acceptedEnhancementsIterator.hasNext() ) {
+            Enhancement enhancement = acceptedEnhancementsIterator.next();
+
+            stringBuilder.append( enhancement.getId() );
+
+            while ( acceptedEnhancementsIterator.hasNext() ) {
+                enhancement = acceptedEnhancementsIterator.next();
+
+                stringBuilder.append( ", " + enhancement.getId() );
+            }
+        }
+
+        return stringBuilder.toString();
+    }
 }

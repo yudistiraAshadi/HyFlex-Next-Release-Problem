@@ -276,4 +276,39 @@ class NRPInstance
         return parentEnhancementsList;
     }
 
+    @Override
+    public String toString()
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        // Customers
+        stringBuilder.append( "All Customers: \n" );
+        stringBuilder.append( "customerId, customerProfit, customerCost, requirements" );
+        for ( Customer customer : this.customersList ) {
+            stringBuilder.append( "\n" + customer.getId() + ", " + customer.getProfit() + ", "
+                    + customer.getOriginalCost() + ", [" );
+            
+            for ( Enhancement enhancement : customer.getOriginalEnhancementsList() ) {
+                stringBuilder.append( " " + enhancement.getId() );
+            }
+            
+            stringBuilder.append( " ]" );
+        }
+
+        
+        
+        stringBuilder.append( "\nAll Enhancemens: \n" );
+        stringBuilder.append( "enhancementId, enhancementCost, enhancementDependencies" );
+        for ( Enhancement enhancement : this.enhancementsList ) {
+            stringBuilder.append( "\n" + enhancement.getId() + ", " + enhancement.getCost() + ", [" );
+            
+            for ( Enhancement enhancement2 : enhancement.getDependencyEnhancementsList() ) {
+                stringBuilder.append( " " + enhancement2.getId() );
+            }
+            
+            stringBuilder.append( " ]" );
+        }
+
+        return stringBuilder.toString();
+    }
 }

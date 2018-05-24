@@ -23,8 +23,8 @@ public class RunFairShareILS {
      */
     public static void main(String[] args) {
         long seed = new Date().getTime();
-        long totalExecutionTime = 60000;
-        int instanceId = 5;
+        long totalExecutionTime = 10000;
+        int instanceId = 1;
         String hyperHeuristicName = "FairShareILS";
         
         //algorithm used (FS-ILS with default parameter settings)

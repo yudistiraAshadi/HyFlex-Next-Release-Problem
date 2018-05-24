@@ -11,8 +11,8 @@ public class RunEPH
     public static void main( String[] args )
     {
         long seed = 1234;
-        int instanceId = 5;
-        long timeLimit = 60000;
+        int instanceId = 1;
+        long timeLimit = 10000;
         String hyperHeuristicName = "DavidChescEPH";
 
         // create a ProblemDomain object with a seed for the random number generator

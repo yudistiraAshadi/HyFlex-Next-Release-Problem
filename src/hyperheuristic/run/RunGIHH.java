@@ -25,8 +25,8 @@ public class RunGIHH {
 	public static void main(String[] args) {
 		
 		long seed = 1234;
-		long totalExecutionTime = 15000;
-		int instanceId = 5;
+		long totalExecutionTime = 10000;
+		int instanceId = 2;
 		String hyperHeuristicName = "GIHH";
 		
 		SelectionMethodType selectionType = SelectionMethodType.AdaptiveLimitedLAassistedDHSMentorSTD;
@@ -46,7 +46,7 @@ public class RunGIHH {
 				                                               resultFileName, selectionType, acceptanceType);
 
 		//we must load an instance within the problem domain, in this case we choose instance 2
-		problem.loadInstance(5);
+		problem.loadInstance(instanceId);
 		
 		//we must set the time limit for the hyper-heuristic in milliseconds
 		hyper_heuristic_object.setTimeLimit(totalExecutionTime);
@@ -61,9 +61,9 @@ public class RunGIHH {
         hyper_heuristic_object.run();
 
 		//obtain the best solution found within the time limit
-		double bestSolutionValue = 1.0 / hyper_heuristic_object.getBestSolutionValue();
+		double bestSolutionValue = 0 - hyper_heuristic_object.getBestSolutionValue();
 		System.out.println("\n\n BEST SLN FOUND: "+bestSolutionValue);
 		
-		NRPLogger.logFinish( bestSolutionValue );
+		NRPLogger.logFinish( bestSolutionValue, problem.bestSolutionToString(), problem.toString() );
 	}
 }
